@@ -401,3 +401,5 @@ When presenting this project during the viva, here is how the core requirements 
    *`ConversationManager.build_prompt_messages()` applies a sliding window of `MAX_HISTORY_PAIRS * 2` messages. Old turns are pruned FIFO, while the system prompt is permanently anchored at position 0.*
 4. **How are off-topic and adversarial queries handled?**  
    *`ConversationManager.should_redirect()` performs multi-tier inspection: it whitelists conversational pleasantries, validates gym-related keywords, and flags explicit off-topic patterns (code, jailbreaks, math). Intercepted queries return an instant on-brand response without consuming CPU inference cycles.*
+#   N L P _ A 1  
+ 
