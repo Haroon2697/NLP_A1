@@ -1,0 +1,1 @@
+"""Gym assistant package."""
