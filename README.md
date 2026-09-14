@@ -1,405 +1,1141 @@
-# FitAssist — FitZone Gym Conversational AI Assistant
-**NLP Assignment 1: Local CPU Conversational AI System with Prompt Orchestration & Session Memory**
+FitAssist — FitZone Gym Conversational AI Assistant
 
-### 👤 Student / Contributor Information
-- **Name / GitHub**: [Haroon2697](https://github.com/Haroon2697)
-- **Email**: `ha01k5295@gmail.com`
+NLP Assignment 1 — Local CPU Conversational AI System with Prompt Orchestration & Session Memory
 
----
+FitAssist is a local, CPU-based conversational AI assistant for FitZone Gym. It provides information about memberships, classes, trainers, gym timings, freezes, cancellations, and related gym policies through a ChatGPT-style web interface.
 
-## Executive Summary
+The system uses a small quantized open-weight instruction model running locally through Ollama, with FastAPI, WebSockets, asynchronous streaming, session-based conversation memory, and prompt-based domain guardrails.
 
-FitAssist is a fully local, CPU-optimized conversational AI system designed for **FitZone Gym**. The system runs on a quantized open-weight Large Language Model (`qwen2.5:3b-instruct` in Q4_K_M quantization) via Ollama, exposing an asynchronous real-time WebSocket streaming API and a modern ChatGPT-style web interface.
+Table of Contents
 
-> **Crucial Assignment Constraint**: This system strictly utilizes **zero external tools, zero plugins, and zero Retrieval-Augmented Generation (RAG)**. All domain intelligence, persona retention, and multi-turn coherence are achieved exclusively through prompt orchestration and sliding-window conversational context memory.
+1. Project Overview
 
----
+2. Assignment Requirements Mapping
 
-## Deliverables & Features Checklist
+3. Business Use Case
 
-| Requirement | Implementation Status | Location in Codebase |
-| :--- | :--- | :--- |
-| **Fully Local Inference (CPU)** | `qwen2.5:3b-instruct` (3.1B, Q4_K_M) via Ollama | [config.py](file:///c:/Work/NLP_A1/backend/app/config.py), [llm_client.py](file:///c:/Work/NLP_A1/backend/app/llm_client.py) |
-| **Real-Time WebSocket Streaming** | JSON streaming protocol at `/ws/chat` | [main.py](file:///c:/Work/NLP_A1/backend/app/main.py) |
-| **Context State Management** | Sliding-window FIFO pruning with system anchor | [conversation_manager.py](file:///c:/Work/NLP_A1/backend/app/conversation_manager.py) |
-| **Asynchronous Concurrency** | Non-blocking async event loop across concurrent users | [main.py](file:///c:/Work/NLP_A1/backend/app/main.py) |
-| **Clean, Usable UI** | ChatGPT-style UI with dark/light mode & session manager | [index.html](file:///c:/Work/NLP_A1/frontend/index.html), [App.jsx](file:///c:/Work/NLP_A1/frontend/src/App.jsx) |
-| **Domain Guardrails** | Interception of off-topic, coding, math & jailbreak queries | [conversation_manager.py](file:///c:/Work/NLP_A1/backend/app/conversation_manager.py) |
-| **Comprehensive Test Suite** | 18 unit and integration tests (100% passing) | [tests/](file:///c:/Work/NLP_A1/tests) |
-| **Latency Benchmarks** | Empirical TTFT & throughput measured on CPU | [benchmark_results.json](file:///c:/Work/NLP_A1/backend/benchmark_results.json) |
-| **Bonus Claimed** | **UX/Persona Polish Bonus** (live telemetry, chat export, hardened persona) | Frontend & Prompt System |
+4. Conversation Design
 
----
+5. Example Dialogues
 
-## Phase I — Business Case Selection & Conversational Design
+6. Local LLM and Model Selection
 
-### 1. Business Use-Case Description
-FitAssist serves as the frontline virtual membership assistant for **FitZone Gym**, a premium fitness and wellness club. The assistant guides both prospective visitors and existing members by providing authoritative, on-brand information regarding:
-- **Membership Plans & Pricing**: Features, tiers (Basic, Standard, Premium), and commitment terms.
-- **Group Class Schedules**: Days, timings, class descriptions (Yoga, HIIT, Strength, Zumba), and studio locations.
-- **Certified Trainer Profiles**: Specialties, certifications, and experience levels of in-house fitness coaches.
-- **Gym Policies & Facilities**: 30-day freeze guidelines, 7-day cancellation terms, operating hours, day lockers, sauna/steam amenities, and guest trial passes.
-- **Safe Boundary Enforcement**: Clarifying that actual bookings, billing debits, and freeze approvals are finalized at the reception desk or member portal. Medical advice and diagnosis are strictly avoided.
+7. Context Memory Management
 
----
+8. System Architecture
 
-### 2. Conversation Flow Design
+9. WebSocket API
 
-The conversation flow is purpose-built for the fitness domain and structured across five distinct stages:
+10. REST API
 
-```mermaid
+11. Concurrency and Streaming
+
+12. Frontend and UX
+
+13. Testing
+
+14. Latency Benchmarking
+
+15. Project Structure
+
+16. Setup and Running
+
+17. Known Limitations
+
+18. Bonus Feature
+
+19. Viva / Demonstration Guide
+
+20. Academic Integrity
+
+1. Project Overview
+
+Objective
+
+The objective of FitAssist is to demonstrate how a conversational AI system can operate entirely on a local machine without relying on cloud LLM APIs, RAG, external tools, or plugins.
+
+Key Features
+
+Local quantized LLM inference through Ollama
+
+CPU-only execution
+
+FastAPI backend
+
+Real-time WebSocket communication
+
+Streaming assistant responses
+
+Per-session conversation history
+
+Sliding-window context management
+
+Domain-specific system prompting
+
+Off-topic and adversarial query handling
+
+ChatGPT-style responsive frontend
+
+New chat / session management
+
+REST endpoints for health, history, reset, and fallback chat
+
+Automated tests
+
+CPU latency and throughput benchmarking
+
+Optional UX/persona polish features
+
+Core Constraint
+
+No external LLM API, RAG pipeline, vector database, agent framework, plugin, or external business tool is used.
+
+All conversational intelligence comes from:
+
+The local instruction model
+
+The structured system prompt
+
+The conversation manager
+
+The session history/context window
+
+Application-level domain guardrails
+
+2. Assignment Requirements Mapping
+
+Assignment Requirement
+
+FitAssist Implementation
+
+Local open-weight LLM
+
+Qwen 2.5 3B family through Ollama
+
+Quantized model
+
+Q4 quantization
+
+CPU inference
+
+Local Ollama inference on CPU
+
+FastAPI backend
+
+Implemented
+
+REST API
+
+/health, history, reset, fallback chat, benchmarks
+
+WebSocket
+
+/ws/chat
+
+Real-time streaming
+
+Incremental JSON response frames
+
+Session management
+
+Independent session_id per conversation
+
+Conversation history
+
+In-memory per-session history
+
+Context management
+
+Sliding-window pruning
+
+Prompt orchestration
+
+Structured system prompt + recent history
+
+Domain restriction
+
+Gym-only assistant behavior
+
+Off-topic handling
+
+Application-level guardrails + prompt rules
+
+Concurrent users
+
+Async FastAPI/WebSocket handling
+
+Error handling
+
+Validation and graceful error frames
+
+Frontend
+
+ChatGPT-style web UI
+
+Reset/New Chat
+
+Implemented
+
+Testing
+
+Unit/integration/edge-case tests
+
+Benchmarking
+
+TTFT, response time and tokens/sec
+
+README documentation
+
+This document
+
+Important: The exact model tag, quantization, test count, benchmark values, and hardware specifications in this README must match the actual files and commands in the submitted repository. Do not claim a result that has not been reproduced locally.
+
+3. Business Use Case
+
+Business: FitZone Gym
+
+FitZone Gym is a fictional premium fitness and wellness club used as the business case for this assignment.
+
+FitAssist acts as the gym's virtual membership assistant for prospective and existing members.
+
+Supported Topics
+
+Membership plans and pricing
+
+Group fitness classes
+
+Trainer information
+
+Gym operating hours
+
+Membership freeze policy
+
+Membership cancellation policy
+
+Booking-related guidance
+
+General FitZone facilities and policies
+
+Assistant Boundary
+
+FitAssist does not:
+
+Process payments
+
+Access a live membership database
+
+Check real-time class availability
+
+Create or cancel a real booking
+
+Approve membership freezes
+
+Provide medical diagnosis or medical treatment
+
+Answer unrelated programming, mathematics, trivia, or general-purpose questions
+
+When an operation requires a live system, FitAssist clearly explains the limitation and directs the member to the appropriate FitZone channel.
+
+Example Business Data
+
+Membership Plans
+
+Plan
+
+Price
+
+Main Features
+
+Basic
+
+Rs. 4,000/month
+
+Gym access
+
+Standard
+
+Rs. 6,000/month
+
+Gym access + group classes
+
+Premium
+
+Rs. 9,000/month
+
+Standard benefits + trainer sessions
+
+Gym Hours
+
+Day
+
+Hours
+
+Monday–Friday
+
+6:00 AM – 11:00 PM
+
+Saturday–Sunday
+
+8:00 AM – 10:00 PM
+
+Group Classes
+
+Class
+
+Schedule
+
+Yoga
+
+Monday, Wednesday, Friday — 6:00 PM
+
+HIIT
+
+Tuesday, Thursday — 7:00 PM
+
+Strength Training
+
+Monday, Wednesday — 8:00 PM
+
+Zumba
+
+Saturday — 5:00 PM
+
+Trainers
+
+Trainer
+
+Specialty
+
+Ahmed Khan
+
+Strength Training
+
+Sarah Ali
+
+Yoga and Mobility
+
+Usman Malik
+
+HIIT and Conditioning
+
+Policies
+
+Membership freeze: up to 30 days
+
+Cancellation: 7 days' notice
+
+Live booking/payment actions: not supported by the assignment implementation
+
+4. Conversation Design
+
+FitAssist follows a flexible conversational flow rather than a rigid script.
+
 flowchart TD
-    S1[Stage 1: Greeting & Intent Triage] --> S2[Stage 2: Information Gathering & Qualification]
-    S2 --> S3[Stage 3: Policy, Plan & Schedule Guidance]
-    S3 --> S4[Stage 4: Action Confirmation & Reception Handoff]
-    S4 --> S5[Stage 5: Motivating Closing]
+    A[Greeting / User Intent] --> B[Understand Request]
+    B --> C[Gather Missing Information]
+    C --> D[Provide Gym Information]
+    D --> E[Confirm / Clarify]
+    E --> F[Close or Continue]
 
-    S2 -.->|Mid-Conversation Topic Shift| S3
-    S3 -.->|Off-Topic / Adversarial Detour| GR[Guardrail Interception & Redirection]
-    GR -.-> S1
-```
+    B --> G[Topic Change]
+    G --> D
 
-#### Stage 1: Greeting & Intent Triage
-- **Objective**: Welcomes the user warmly with motivating fitness club energy.
-- **Action**: Quickly identifies whether the visitor is inquiring about joining, exploring classes, consulting on trainers, or asking about policies.
+    B --> H[Off-Topic / Adversarial Query]
+    H --> I[Domain Redirection]
+    I --> B
 
-#### Stage 2: Information Gathering & Qualification
-- **Objective**: Solicits the minimum necessary details to make tailored recommendations without overwhelming the user.
-- **Action**: Checks preferred workout style (e.g., solo lifting vs. group cardio), workout time preferences, or current membership status.
+Conversation Stages
 
-#### Stage 3: Policy, Plan & Schedule Guidance
-- **Objective**: Delivers clear, structured explanations of FitZone offerings.
-- **Action**: Compares plan tiers (Basic @ Rs. 4k, Standard @ Rs. 6k, Premium @ Rs. 9k), details trainer backgrounds (Ahmed Khan, Sarah Ali, Usman Malik), or outlines weekly class timetables.
+Stage 1 — Greeting and Intent Identification
 
-#### Stage 4: Action Confirmation & Reception Handoff
-- **Objective**: Prepares the user for the next logical physical step.
-- **Action**: Explains that formal trial passes, freeze requests, and membership enrollments are finalized at the FitZone reception desk or member portal, managing user expectations without pretending to charge credit cards.
+Identify whether the user is asking about:
 
-#### Stage 5: Motivating Closing
-- **Objective**: Concludes the dialogue with encouraging fitness sentiment.
-- **Action**: Encourages healthy habits and invites further questions.
+Memberships
 
----
+Classes
 
-### 3. Topic Shifts & Irrelevant Query Handling
+Trainers
 
-#### Handling Mid-Conversation Topic Shifts
-In a fitness club environment, users often pivot abruptly—for instance, inquiring about the Yoga schedule and then suddenly asking how to freeze their membership due to unexpected travel.
-- **Mechanism**: Rather than forcing a rigid script, the conversation manager preserves prior context in the sliding window while smoothly following the newly introduced gym intent. It acknowledges the shift (e.g., *"If you're planning to travel, you can freeze your membership..."*) while retaining awareness of their fitness interests.
+Gym timings
 
-#### Guardrail Defense Against Irrelevant & Adversarial Queries
-The system enforces strict multi-layered guardrails:
-1. **Filler & Pleasantry Allowance**: Natural conversational phrases (*"hello"*, *"thanks"*, *"sure"*, *"yes"*, *"how are you"*) are permitted to foster human-like flow.
-2. **Domain Match Validation**: Analyzes domain relevance against core fitness, gym, trainer, and policy concepts.
-3. **Adversarial & Injection Interception**: Detects and intercepts prompt injections (*"ignore previous instructions"*, *"act as a Linux terminal"*), programming queries (*"write a python function"*), general trivia (*"who was Napoleon"*), and mathematical requests.
-4. **Standard Redirection Message**:
-   > *"I'm FitAssist, the dedicated assistant for FitZone Gym. I can only help with our membership plans, group class schedules, trainer profiles, gym timings, and club policies (such as freezes and cancellations). How can I assist you with your fitness journey at FitZone today?"*
+Freeze/cancellation
 
----
+Booking guidance
 
-### 4. Multi-Turn Example Dialogues
+Other FitZone policies
 
-#### Example Dialogue 1: Prospective Member Plan Exploration & Comparison
-> **User**: *Hi! I am looking to join FitZone Gym, but I am not sure which plan is right for me.*  
-> **FitAssist**: *Welcome to FitZone Gym! We would love to have you join our fitness community. We offer three primary membership tiers:  
-> • **Basic Plan (Rs. 4,000/month)**: Full access to the gym floor, cardio zone, free weights, and locker rooms.  
-> • **Standard Plan (Rs. 6,000/month)**: Everything in Basic plus unlimited group fitness classes (Yoga, HIIT, Strength, Zumba).  
-> • **Premium Plan (Rs. 9,000/month)**: Everything in Standard plus 4 monthly 1-on-1 personal training sessions, sauna/steam room access, and 2 guest passes.  
-> Are you interested primarily in independent workouts, or would you like to take advantage of our group classes and personal coaching?*  
-> **User**: *I really want personal coaching and access to the sauna.*  
-> **FitAssist**: *In that case, the **Premium Plan (Rs. 9,000/month)** is the ideal match! It includes 4 personal training sessions every month with our certified coaches, full access to our sauna and steam amenities, plus complimentary towel service. You can also save 15% if you choose our upfront 12-month annual commitment. Would you like to know about our certified personal trainers?*
+Stage 2 — Information Gathering
 
----
+Ask only for information required to answer the current gym-related request.
 
-#### Example Dialogue 2: Class Schedule & Trainer Inquiries
-> **User**: *Do you have Yoga classes, and what time are they held?*  
-> **FitAssist**: *Yes, we have a wonderful Yoga program focused on mobility, flexibility, and mindfulness in Studio A!  
-> • **Schedule**: Monday, Wednesday, and Friday at 6:00 PM.  
-> All Yoga classes are included with our Standard and Premium memberships.*  
-> **User**: *Who teaches the Yoga classes? Can beginners attend?*  
-> **FitAssist**: *Our Yoga classes are led by **Sarah Ali**, an internationally certified 500-hour RYT instructor specializing in posture, mobility, and breathwork. Her classes are very beginner-friendly and include posture modifications for newcomers. You can also pick up a complimentary 1-day guest pass at our front desk with a valid photo ID to try a session!*
+Examples:
 
----
+Preferred class
 
-#### Example Dialogue 3: Mid-Conversation Topic Shift & Off-Topic Guardrail
-> **User**: *What time does the gym close on weekends?*  
-> **FitAssist**: *On Saturdays and Sundays, FitZone Gym is open from 8:00 AM to 10:00 PM (on weekdays we are open 6:00 AM to 11:00 PM).*  
-> **User**: *Actually, I will be traveling abroad next month. Can I freeze my membership?*  
-> **FitAssist**: *Yes, you certainly can! FitZone allows members to freeze their membership for up to 30 days per calendar year. We just ask for 48 hours advance written notice so our front desk can pause your billing cycle accordingly.*  
-> **User**: *Great. Also, can you write a quick Python script to calculate Fibonacci numbers?*  
-> **FitAssist**: *I'm FitAssist, the dedicated assistant for FitZone Gym. I can only help with our membership plans, group class schedules, trainer profiles, gym timings, and club policies (such as freezes and cancellations). How can I assist you with your fitness journey at FitZone today?*
+Preferred day
 
----
+Current membership
 
-## Phase II — Local LLM Selection & Context Memory Management
+Desired membership features
 
-### 1. Model Selection & Justification
+Freeze duration
 
-| Metric / Parameter | Value |
-| :--- | :--- |
-| **Model Name** | `qwen2.5:3b-instruct` |
-| **Architecture** | Dense Causal Language Model (Qwen 2.5 series) |
-| **Parameter Size** | 3.09 Billion parameters (~3.1B) |
-| **Quantization** | Q4_K_M (4-bit medium k-quantization, GGUF) |
-| **Disk / RAM Size** | 1.93 GB |
-| **Context Window Used** | 2,048 tokens (`num_ctx: 2048`) |
-| **Inference Engine** | Local Ollama Runtime (100% CPU inference) |
+Stage 3 — Domain Response
 
-#### Rationale for Selection:
-1. **CPU Efficiency (0.5B–4B Range)**: With a 1.93 GB footprint, `qwen2.5:3b-instruct` fits comfortably into standard laptop CPU L3 cache and RAM without triggering memory swapping.
-2. **Superior Instruction Adherence**: Qwen 2.5 demonstrates industry-leading benchmark adherence to system instructions, critical for respecting strict domain boundaries and preventing persona deviation.
-3. **Structured Output & Reasoning**: Generates markdown tables, lists, and bold callouts with low temperature (`temperature=0.3`), ensuring repeatable pricing and scheduling answers.
-4. **No Cloud Dependency**: Completely self-contained, guaranteeing zero API costs, full data sovereignty, and offline capability.
+Provide the relevant FitZone information using the system prompt and conversation context.
 
----
+Stage 4 — Action Limitation / Handoff
 
-### 2. Context Memory Management Scheme
+If the user asks the assistant to perform a transaction, the assistant explains that the current system cannot execute it.
 
-Because this assignment operates without external vector databases (RAG) or external tools, conversational memory must be managed within the prompt's context window.
+Stage 5 — Closing
 
-```mermaid
-graph TD
-    subgraph Prompt Composition
-        A[Permanent Anchor: System Prompt] --- B[Turn History: Pruned via Sliding Window]
-        B --- C[Latest User Query]
-    end
-    A --> D[Bounded 2048 Token Context Budget]
-    B --> D
-    C --> D
-    D --> E[Ollama CPU Generation]
-```
+The assistant remains concise and helpful and allows the user to continue the conversation.
 
-1. **System Prompt as Permanent Invariant**: The detailed FitZone Gym business knowledge, policies, and persona guardrails are anchored at `messages[0]`. This anchor is never modified or evicted.
-2. **Sliding-Window FIFO Pruning**:
-   - The conversation history is stored as a list of `{"role": "user"|"assistant", "content": "..."}` turns per session.
-   - The memory window is constrained to the most recent `MAX_HISTORY_PAIRS = 6` (12 dialogue turns).
-   - As new turns arrive, older turns exceeding the threshold are cleanly discarded in FIFO order.
-3. **Preventing Context Bloat on CPU**:
-   - Running inference on CPU means prompt evaluation (`eval_count`) increases linearly with context length. Limiting turns to 6 pairs bounds prompt evaluation time to under ~1.5 seconds, avoiding progressive degradation of TTFT across long multi-turn sessions.
-4. **Session Isolation**: Each user connection maintains an independent session ID (`session_id`). Conversational memory is stored in an isolated dictionary partition, preventing cross-talk between concurrent users.
+5. Example Dialogues
 
----
+Dialogue 1 — Membership Recommendation
 
-### 3. Empirical Latency Benchmarks on CPU
+User:
+Hi! I want to join FitZone but I'm not sure which plan is right for me.
 
-The repository includes a standalone automated benchmark suite ([backend/benchmark.py](file:///c:/Work/NLP_A1/backend/benchmark.py)). Measurements performed directly on the host machine:
+FitAssist:
+FitZone offers three plans:
 
-| Benchmark Query Category | Prompt Tested | TTFT (Time to First Token) | Total Response Time | Tokens Generated | Throughput |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Cold Start (Model Load + Query)** | *"What are the membership plans at FitZone Gym?"* | 60.76 s | 108.75 s | 195 tokens | 1.79 tok/s |
-| **Warm Query 1 (Policy & Freeze)** | *"How does the membership freeze policy work if I travel for 3 weeks?"* | **1.10 s** | 66.39 s | 249 tokens | **3.75 tok/s** |
-| **Warm Query 2 (Classes & Schedule)**| *"Can you give me the weekly Yoga schedule and tell me who the trainer is?"* | **1.95 s** | 39.69 s | 132 tokens | **3.33 tok/s** |
-| **Summary / Warm Averages** | — | **~1.52 s** | **~53.04 s** | **190 tokens** | **~3.54 tok/s** |
+Basic — Rs. 4,000/month
 
-*Hardware Notes: Measured on standard Intel/AMD CPU with 16GB RAM running Windows, Ollama v0.5+, and `qwen2.5:3b-instruct` (Q4_K_M).*
+Standard — Rs. 6,000/month, including group classes
 
----
+Premium — Rs. 9,000/month, including trainer sessions
 
-## Phase III — System Architecture
+If you tell me whether you prefer independent workouts, group classes, or personal training, I can help you choose.
 
-```mermaid
+User:
+I mainly want personal training.
+
+FitAssist:
+The Premium plan would be the best fit because it includes trainer sessions along with the Standard plan benefits.
+
+Dialogue 2 — Context Memory
+
+User:
+Do you have Yoga classes?
+
+FitAssist:
+Yes. Yoga is held Monday, Wednesday, and Friday at 6:00 PM.
+
+User:
+Who teaches it?
+
+FitAssist:
+Sarah Ali teaches the Yoga and Mobility sessions.
+
+User:
+What about Tuesday?
+
+FitAssist:
+Yoga is not listed for Tuesday. The Tuesday group class is HIIT at 7:00 PM.
+
+The assistant uses the previous conversation context rather than treating each message as an unrelated question.
+
+Dialogue 3 — Topic Change and Off-Topic Handling
+
+User:
+What time does the gym close on weekends?
+
+FitAssist:
+FitZone is open from 8:00 AM to 10:00 PM on Saturday and Sunday.
+
+User:
+Actually, can I freeze my membership while travelling?
+
+FitAssist:
+Yes. FitZone allows membership freezes for up to 30 days. I can explain the policy, but I cannot apply the freeze directly because this assistant does not have access to the membership system.
+
+User:
+Also, write me a Python Fibonacci program.
+
+FitAssist:
+I'm FitAssist, the dedicated assistant for FitZone Gym. I can help with membership plans, classes, trainers, gym timings, and FitZone policies. How can I help with your gym membership?
+
+6. Local LLM and Model Selection
+
+FitAssist uses a small instruction-tuned model that falls within the assignment's required parameter range.
+
+Current Configuration
+
+Parameter
+
+Configuration
+
+Model family
+
+Qwen 2.5 3B
+
+Parameter size
+
+Approximately 3B
+
+Quantization
+
+Q4 variant
+
+Runtime
+
+Ollama
+
+Inference
+
+Local CPU
+
+Context configured by application
+
+2,048 tokens
+
+Temperature
+
+0.3
+
+Why a Small Quantized Model?
+
+A 3B-class Q4 model provides a practical balance between:
+
+Instruction following
+
+Local memory requirements
+
+CPU inference speed
+
+Response quality
+
+Assignment compliance
+
+The model is intentionally small because the assignment requires local CPU execution rather than cloud inference.
+
+Verification
+
+Before submission, verify the actual installed model and quantization with:
+
+ollama list
+ollama show <model-name>
+
+The README should use the exact model tag reported by the submitted environment.
+
+7. Context Memory Management
+
+Because the system does not use RAG or an external database, conversational memory is maintained through the conversation manager.
+
+Prompt Composition
+
+flowchart LR
+    A[System Prompt] --> D[Prompt Context]
+    B[Recent Session History] --> D
+    C[Current User Message] --> D
+    D --> E[Local LLM]
+    E --> F[Streaming Response]
+
+Session Isolation
+
+Each conversation has its own session_id.
+
+Conceptually:
+
+sessions
+├── session-A → history for user A
+├── session-B → history for user B
+└── session-C → history for user C
+
+This prevents one user's conversation from being mixed with another user's history.
+
+Sliding-Window Memory
+
+The implementation keeps the system prompt as the permanent instruction anchor and limits the number of historical turns supplied to the model.
+
+Current strategy:
+
+System prompt remains at the beginning.
+
+Recent conversation turns are retained.
+
+Older turns are removed using FIFO pruning.
+
+The current user message is always included.
+
+The current implementation uses:
+
+MAX_HISTORY_PAIRS = 6
+
+which corresponds to up to 12 user/assistant messages in the recent history window.
+
+Why Use a Sliding Window?
+
+A bounded context helps:
+
+Prevent prompt growth
+
+Reduce CPU prompt-evaluation cost
+
+Maintain predictable memory usage
+
+Keep recent conversational information available
+
+Avoid claiming a specific latency improvement such as "under 1.5 seconds" unless that value has been measured and reproduced on the submitted machine.
+
+8. System Architecture
+
 flowchart TB
-    subgraph Client Layer [Frontend / Browser]
-        UI[ChatGPT-Style Web Interface]
-        LS[(localStorage Sessions)]
-        UI <--> LS
-    end
+    U[User Browser] <--> F[ChatGPT-Style Frontend]
 
-    subgraph API Layer [FastAPI Server: Port 8000]
-        WS["WebSocket Endpoint (/ws/chat)"]
-        REST["REST API (/health, /api/chat, /api/benchmarks)"]
-        STATIC["Static UI File Mount (/)"]
-    end
+    F <--> W[FastAPI WebSocket /ws/chat]
+    F --> R[FastAPI REST Endpoints]
 
-    subgraph Core Engine [Backend Application]
-        CM[Conversation Manager]
-        GW[Domain Guardrails & Topic Detector]
-        MEM[(Sliding-Window Session Memory)]
-        PB[Structured Prompt Builder]
-        
-        CM --> GW
-        CM --> MEM
-        CM --> PB
-    end
+    W --> C[Conversation Manager]
+    R --> C
 
-    subgraph Inference Engine [Local Ollama Runtime: Port 11434]
-        OL[Ollama API /api/chat]
-        LLM[Qwen 2.5 3B Instruct Q4_K_M]
-        OL --> LLM
-    end
+    C --> G[Domain Guardrails]
+    C --> M[Session Memory]
+    C --> P[Prompt Builder]
 
-    UI <==>|Bi-directional Streaming JSON| WS
-    UI -->|HTTP Requests| REST
-    UI -->|Asset Request| STATIC
-    WS <--> CM
-    REST <--> CM
-    PB -->|Async HTTP Stream| OL
-    OL -.->|Word-by-word token chunks| WS
-```
+    P --> O[Ollama Local API]
+    O --> L[Quantized Local LLM]
 
----
+    L --> O
+    O -->|Streaming chunks| W
+    W --> F
 
-## Phase IV — Backend API Implementation
+Main Components
 
-### 1. WebSocket Streaming Endpoint (`/ws/chat`)
+Component
 
-The primary interaction mode is real-time WebSocket streaming over JSON.
+Responsibility
 
-#### Client-to-Server Messages
-- **Send User Turn**:
-  ```json
-  {
-    "session_id": "session-1715000000",
-    "message": "What classes are included with Standard membership?"
-  }
-  ```
-- **Reset Session History**:
-  ```json
-  {
-    "action": "reset",
-    "session_id": "session-1715000000"
-  }
-  ```
+Frontend
 
-#### Server-to-Client Stream Frames
-- **Generation Start**:
-  `{"type": "start", "session_id": "session-1715000000"}`
-- **Token Stream (word-by-word)**:
-  `{"type": "token", "content": "The Standard "}`
-- **Generation Complete (with telemetry)**:
-  ```json
-  {
-    "type": "done",
-    "session_id": "session-1715000000",
-    "redirected": false,
-    "ttft": 1.10,
-    "tokens": 128,
-    "elapsed": 36.2,
-    "tps": 3.54
-  }
-  ```
-- **Graceful Error Frame**:
-  `{"type": "error", "message": "Ollama connection timeout."}`
+User interface and streaming display
 
----
+FastAPI
 
-### 2. REST Endpoints
+HTTP and WebSocket server
 
-- `GET /health` — Returns service status, active model, context window, and temperature.
-- `GET /api/benchmarks` — Returns empirical hardware latency and token metrics.
-- `GET /api/history/{session_id}` — Returns the recorded multi-turn history for a given session.
-- `POST /api/reset` — Body: `{"session_id": "..."}`. Clears session turns.
-- `POST /api/chat` — Non-streaming fallback for single-turn integration tests.
+WebSocket
 
----
+Real-time bidirectional communication
 
-### 3. Asynchronous Concurrency Handling
-- All inference calls to Ollama are made via `httpx.AsyncClient` streaming generators.
-- Each WebSocket connection runs in its own independent `asyncio` task on the FastAPI event loop.
-- Multiple users can stream responses simultaneously without blocking one another.
+Conversation Manager
 
----
+Session state, history and orchestration
 
-## Phase V & Bonus — Web-Based Chat Interface (UX/Persona Polish)
+Guardrails
 
-The web frontend is delivered via both a standalone zero-setup HTML/JS interface ([frontend/index.html](file:///c:/Work/NLP_A1/frontend/index.html)) and an equivalent Vite React build ([frontend/dist/index.html](file:///c:/Work/NLP_A1/frontend/dist/index.html)), served directly at `http://localhost:8000/`.
+Domain and off-topic handling
 
-### 🌟 Bonus Features: UX & Persona Polish
-1. **ChatGPT-Style Layout**: Sleek layout with collapsible sidebar, active chat header, and responsive composer.
-2. **Dark / Light Theme Toggle**: Persistent theme switcher stored in `localStorage`.
-3. **Session Switcher & History**: Users can create new chats, switch between past conversations, and view their history.
-4. **FitZone Quick Cheatsheet Accordion**: Quick-reference sidebar card summarizing membership plans, class schedules, and freeze policies.
-5. **Interactive Starter Chips**: One-click suggestion buttons for popular gym queries.
-6. **Live Telemetry & Token Counter**: Each assistant turn displays real-time `TTFT`, `tokens/sec`, and total tokens.
-7. **Copy to Clipboard & Chat Export**: One-click button to copy any response or download the full conversation transcript as a `.md` markdown file.
-8. **Hardened Persona Defense**: Resistance against prompt injections, roleplay subversions, and off-topic detours.
+Prompt Builder
 
----
+Constructs model input
 
-## Setup & Running Instructions
+Ollama
 
-### Prerequisites
-1. **Python 3.10+** (Tested on Python 3.12)
-2. **Ollama**: Installed from [ollama.com](https://ollama.com)
+Local model runtime
 
----
+Quantized LLM
 
-### Step 1: Install Dependencies
-Open a PowerShell terminal in the repository root:
-```powershell
-# Create and activate virtual environment
+Generates assistant responses
+
+9. WebSocket API
+
+The primary chat interface uses:
+
+/ws/chat
+
+Client Request
+
+{
+  "session_id": "session-1715000000",
+  "message": "What classes are included with Standard membership?"
+}
+
+Reset Request
+
+{
+  "action": "reset",
+  "session_id": "session-1715000000"
+}
+
+Server Stream
+
+Generation starts with:
+
+{
+  "type": "start",
+  "session_id": "session-1715000000"
+}
+
+Tokens/chunks are streamed incrementally:
+
+{
+  "type": "token",
+  "content": "The Standard "
+}
+
+The final frame contains completion information:
+
+{
+  "type": "done",
+  "session_id": "session-1715000000",
+  "redirected": false,
+  "ttft": 1.10,
+  "tokens": 128,
+  "elapsed": 36.2,
+  "tps": 3.54
+}
+
+If an error occurs:
+
+{
+  "type": "error",
+  "message": "Ollama connection timeout."
+}
+
+The exact telemetry fields should match the actual backend implementation.
+
+10. REST API
+
+Method
+
+Endpoint
+
+Purpose
+
+GET
+
+/health
+
+Service/model status
+
+GET
+
+/api/benchmarks
+
+Benchmark results
+
+GET
+
+/api/history/{session_id}
+
+Session history
+
+POST
+
+/api/reset
+
+Clear session history
+
+POST
+
+/api/chat
+
+Non-streaming fallback
+
+The WebSocket endpoint remains the primary real-time interaction mechanism.
+
+11. Concurrency and Streaming
+
+The backend is designed around asynchronous FastAPI/WebSocket handling.
+
+Approach
+
+FastAPI handles multiple WebSocket connections asynchronously.
+
+Each connection has its own session context.
+
+Ollama responses are consumed through asynchronous HTTP streaming.
+
+Response chunks are forwarded to the corresponding WebSocket.
+
+Session histories are not shared between users.
+
+Conceptually:
+
+User A ──> WebSocket ──> Session A ──> Ollama
+User B ──> WebSocket ──> Session B ──> Ollama
+User C ──> WebSocket ──> Session C ──> Ollama
+
+Important Demonstration Point
+
+"Async" does not make CPU inference itself faster. It allows the server to manage multiple connections without blocking the FastAPI event loop while I/O and streaming operations are being handled.
+
+Actual simultaneous-generation capacity still depends on the CPU, RAM, Ollama configuration, and model.
+
+12. Frontend and UX
+
+The frontend provides a simple ChatGPT-style experience.
+
+Core UI Features
+
+Chat history
+
+Message bubbles
+
+Streaming responses
+
+New Chat
+
+Session switching
+
+Responsive layout
+
+Dark/light theme
+
+Quick-start prompts
+
+Copy response
+
+Chat export
+
+Live response telemetry
+
+UX / Persona Polish Bonus
+
+The project claims the UX/Persona Polish bonus rather than the cloud-deployment bonus.
+
+Bonus-oriented features include:
+
+ChatGPT-style layout
+
+Dark/light theme
+
+Session manager
+
+FitZone information cheatsheet
+
+Starter question chips
+
+Live TTFT/token telemetry
+
+Conversation export
+
+Hardened gym-only persona
+
+13. Testing
+
+The test suite covers the major functional and failure scenarios required by the assignment.
+
+Test Categories
+
+Conversation and Memory
+
+Session creation
+
+Session isolation
+
+Multi-turn context
+
+Sliding-window pruning
+
+Reset behavior
+
+Domain Correctness
+
+Membership questions
+
+Class schedule questions
+
+Trainer questions
+
+Policy questions
+
+Topic changes
+
+Guardrails
+
+Programming requests
+
+Mathematics requests
+
+General trivia
+
+Prompt injection attempts
+
+Other off-topic requests
+
+API and Failure Handling
+
+Valid WebSocket messages
+
+Malformed JSON
+
+Missing fields
+
+Empty messages
+
+Ollama/model failure
+
+WebSocket disconnects
+
+Concurrency
+
+Multiple independent sessions
+
+Concurrent WebSocket communication
+
+No history cross-talk
+
+Run:
+
+.venv\Scripts\pytest -v
+
+The README should state the exact test count and pass percentage only after running the final submitted code.
+
+14. Latency Benchmarking
+
+The project measures local inference performance rather than using fabricated performance claims.
+
+Metrics
+
+Time to First Token (TTFT)
+
+Time from the request being sent until the first generated response chunk is received.
+
+Total Response Time
+
+Time from request start until the model finishes generating the response.
+
+Throughput
+
+tokens/sec = generated_tokens / generation_time
+
+Recorded Results
+
+The current development README contains the following measurements:
+
+Test
+
+TTFT
+
+Total Time
+
+Tokens
+
+Throughput
+
+Cold start
+
+60.76 s
+
+108.75 s
+
+195
+
+1.79 tok/s
+
+Warm query — freeze policy
+
+1.10 s
+
+66.39 s
+
+249
+
+3.75 tok/s
+
+Warm query — classes
+
+1.95 s
+
+39.69 s
+
+132
+
+3.33 tok/s
+
+Warm average
+
+~1.52 s
+
+~53.04 s
+
+~190
+
+~3.54 tok/s
+
+Benchmark Reproducibility
+
+Before final submission, record:
+
+CPU:
+RAM:
+OS:
+Ollama version:
+Model:
+Quantization:
+Context size:
+Temperature:
+
+Then run:
+
+.venv\Scripts\python backend/benchmark.py
+
+Do not submit the benchmark table unless these values correspond to the actual final machine and final model configuration.
+
+15. Project Structure
+
+A clean repository should follow a structure similar to:
+
+fitassist/
+│
+├── backend/
+│   ├── app/
+│   │   ├── main.py
+│   │   ├── config.py
+│   │   ├── conversation_manager.py
+│   │   ├── llm_client.py
+│   │   └── ...
+│   ├── benchmark.py
+│   └── benchmark_results.json
+│
+├── frontend/
+│   ├── src/
+│   ├── index.html
+│   └── ...
+│
+├── tests/
+│   ├── test_conversation.py
+│   ├── test_websocket.py
+│   └── test_edge_cases.py
+│
+├── requirements.txt
+├── README.md
+└── .gitignore
+
+Do not commit:
+
+.venv/
+__pycache__/
+node_modules/
+.env
+large model files
+temporary benchmark files
+IDE-specific files
+
+16. Setup and Running
+
+Prerequisites
+
+Python 3.10+
+
+Node.js/npm if rebuilding the React frontend
+
+Ollama
+
+A CPU capable of running the selected local model
+
+Sufficient RAM for the model and application
+
+1. Create Python Environment
+
 python -m venv .venv
 .venv\Scripts\activate
 
-# Install dependencies
+2. Install Backend Dependencies
+
 pip install -r requirements.txt
-```
 
----
+3. Verify Ollama
 
-### Step 2: Start Ollama & Pull the Model
-In a separate terminal:
-```powershell
-# Pull the quantized 3B model (~1.9 GB)
-ollama pull qwen2.5:3b-instruct
+ollama --version
+ollama list
 
-# Start Ollama service (if not already running as a Windows service)
+4. Pull the Model
+
+Use the exact model tag configured by the project. For example:
+
+ollama pull <model-name>
+
+Then verify:
+
+ollama show <model-name>
+
+5. Start Ollama
+
+If Ollama is not already running:
+
 ollama serve
-```
 
----
+6. Start FastAPI
 
-### Step 3: Launch the FastAPI Backend
-```powershell
-# From the project root:
+From the repository root:
+
 .venv\Scripts\uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload
-```
 
----
+7. Open the Application
 
-### Step 4: Open the Chat Interface
-Open your browser and navigate to:
-```text
 http://127.0.0.1:8000/
-```
-*(Alternatively, you can open `frontend/index.html` directly in any web browser).*
 
----
+8. Run Tests
 
-### Step 5: Run Automated Tests
-```powershell
 .venv\Scripts\pytest -v
-```
-*All 18 tests will execute in under 2 seconds, verifying session isolation, sliding-window pruning, guardrail interception, REST endpoints, and WebSocket communication.*
 
----
+9. Run Benchmarks
 
-### Step 6: Run Latency Benchmarks
-```powershell
 .venv\Scripts\python backend/benchmark.py
-```
 
----
+17. Known Limitations
 
-## Known Limitations
+1. CPU Inference Speed
 
-1. **CPU Inference Latency**: While Time to First Token (TTFT) is fast (~1.1s–1.9s once warm), CPU throughput averages ~3.5 tokens/sec. Complex responses of 200+ tokens take approximately 50 seconds on standard laptop CPUs.
-2. **Absence of Live Transactional Systems**: Per the assignment specification (zero tools / zero RAG), the assistant cannot check live studio occupancy or charge payment cards. It explicitly refers members to reception for execution.
-3. **Finite Context Horizon**: Conversations exceeding 6 turn pairs (12 turns) prune oldest turns via FIFO to maintain low CPU latency.
+Local CPU inference is significantly slower than cloud GPU inference. The measured throughput should therefore be reported as an actual benchmark rather than an expected value.
 
----
+2. No Live Transactional Data
 
-## Viva Walkthrough & Code Q&A Guide
+The assignment intentionally avoids external tools and databases. FitAssist cannot:
 
-When presenting this project during the viva, here is how the core requirements are addressed:
+Check live availability
 
-1. **How is the assistant kept from using tools or RAG?**  
-   *All information is encoded directly into `SYSTEM_PROMPT` in `conversation_manager.py`. No vector stores, search plugins, or function calling schemas are used.*
-2. **How is non-blocking concurrency achieved?**  
-   *The FastAPI server handles WebSocket connections using `asyncio`. In `llm_client.py`, Ollama streaming uses `httpx.AsyncClient.stream()` which yields chunks asynchronously, allowing the event loop to serve multiple client connections concurrently without thread exhaustion.*
-3. **How does context memory pruning work?**  
-   *`ConversationManager.build_prompt_messages()` applies a sliding window of `MAX_HISTORY_PAIRS * 2` messages. Old turns are pruned FIFO, while the system prompt is permanently anchored at position 0.*
-4. **How are off-topic and adversarial queries handled?**  
-   *`ConversationManager.should_redirect()` performs multi-tier inspection: it whitelists conversational pleasantries, validates gym-related keywords, and flags explicit off-topic patterns (code, jailbreaks, math). Intercepted queries return an instant on-brand response without consuming CPU inference cycles.*
-#   N L P _ A 1  
- 
+Process payments
+
+Create bookings
+
+Apply freezes
+
+Modify membership records
+
+3. Finite Conversation Context
+
+Older messages are eventually removed by the sliding-window policy.
+
+4. In-Memory Sessions
+
+If the backend process restarts, in-memory conversation sessions are lost. This is acceptable for the assignment's local demonstration unless persistent storage is explicitly required.
+
+5. Static Business Information
+
+FitZone data is embedded in the application/prompt and is therefore not automatically updated from a real gym management system.
+
+18. Bonus Feature
+
+Selected Bonus: UX / Persona Polish
+
+The project selects one bonus category only:
+
+UX / Persona Polish
+
+The implementation improves the user experience through:
+
+Responsive ChatGPT-style interface
+
+Theme switching
+
+Session management
+
+Starter prompts
+
+FitZone information cheatsheet
+
+Response telemetry
+
+Copy/export functionality
+
+Stronger domain persona and redirection behavior
+
+The cloud-deployment bonus is not claimed.
+
