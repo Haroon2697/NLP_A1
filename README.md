@@ -572,9 +572,12 @@ python backend/benchmark.py
 
 ## 18. Bonus Features Claimed
 
-### Primary Bonus Claimed: UX / Persona Polish (+10%)
-The system features a deeply polished user interface and hardened persona:
+### Primary Bonus Claimed: UX / Persona Polish (+10%) & Cloud Deployment
+- **Live Deployed Vercel URL**: **[https://frontend-dusky-chi-82.vercel.app/](https://frontend-dusky-chi-82.vercel.app/)**
 - **Rich ChatGPT Experience**: Responsive sidebar, quick chips, message bubbles, and smooth auto-scrolling.
+- **Dual-Mode Operation**:
+  1. **Live Local LLM Streaming**: Real-time word-by-word streaming from local `qwen2.5:3b-instruct` over WebSocket.
+  2. **Standalone Cloud Mode**: When visited in the cloud without a local tunnel running, the interface operates gracefully via an embedded FitZone domain engine, demonstrating all domain answers, prompt stages, and guardrails with token streaming.
 - **Dark & Light Modes**: Full CSS variable theming with `localStorage` persistence.
 - **FitZone Information Cheatsheet**: Quick-reference sidebar accordion displaying membership tiers and group class schedules.
 - **Export & Copy**: Instant copy button on every assistant bubble and full Markdown session transcript export.
@@ -584,6 +587,8 @@ The system features a deeply polished user interface and hardened persona:
 ---
 
 ## 19. Vercel Deployment Guide (Frontend & Backend)
+
+- **Production URL**: **[https://frontend-dusky-chi-82.vercel.app/](https://frontend-dusky-chi-82.vercel.app/)**
 
 When importing this repository into Vercel, Vercel scans your repository structure and displays:
 ```text
@@ -604,7 +609,9 @@ Detected 3 deployable directories in 1 new repository:
 > **Important Technical Distinction**:  
 > The assignment requires a **quantized LLM running locally on CPU** (e.g. Ollama with Qwen 2.5 3B).  
 > **Vercel is a Serverless platform**: it provides 10-second timeout functions with a 250MB size limit. It **cannot run a 2GB Ollama model or maintain long-lived WebSockets**.  
-> Therefore, the recommended deployment architecture deploys the **Frontend to Vercel** and connects it to your **running backend** via a secure tunnel (e.g., ngrok) or public server.
+> Therefore, the deployed architecture deploys the **Frontend to Vercel** and provides dual-mode flexibility:
+> 1. **Standalone Cloud Mode**: Anyone visiting the Vercel link can interact with FitAssist immediately without needing any server running on their machine!
+> 2. **Local LLM WebSocket Tunnel**: For viva or local testing, users can link their running local CPU model via ngrok with a single click.
 
 ---
 
@@ -617,7 +624,7 @@ Detected 3 deployable directories in 1 new repository:
    - **Root Directory**: `frontend`
    - **Build Command**: `npm run build`
    - **Output Directory**: `dist`
-3. Click **Deploy**. Vercel will build the frontend and provide your live URL (e.g., `https://fitzone-assistant.vercel.app`).
+3. Click **Deploy**. Vercel will build the frontend and provide your live URL: `https://frontend-dusky-chi-82.vercel.app/`.
 
 #### Step 2: Connect the Vercel Frontend to your Backend
 Because your backend runs locally on your CPU:

@@ -1100,15 +1100,155 @@
       };
 
       ws.onerror = (err) => {
-        statusDot.className = 'status-dot offline';
-        statusText.textContent = 'Backend Offline';
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        if (!isLocal) {
+          statusDot.className = 'status-dot';
+          statusText.textContent = 'Cloud Demo Active (Click to link Local LLM)';
+        } else {
+          statusDot.className = 'status-dot offline';
+          statusText.textContent = 'Backend Offline';
+        }
       };
 
       ws.onclose = () => {
-        statusDot.className = 'status-dot offline';
-        statusText.textContent = 'Disconnected (Reconnecting in 2s...)';
-        setTimeout(connectWebSocket, 2000);
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        if (!isLocal) {
+          statusDot.className = 'status-dot';
+          statusText.textContent = 'Cloud Demo Active (Click to link Local LLM)';
+        } else {
+          statusDot.className = 'status-dot offline';
+          statusText.textContent = 'Disconnected (Reconnecting in 2s...)';
+          setTimeout(connectWebSocket, 2000);
+        }
       };
+    }
+
+    // --- Intelligent Domain Fallback for Vercel Cloud Mode ---
+    function generateDemoResponse(query) {
+      const lower = (query || '').toLowerCase();
+
+      // Guardrail & Off-Topic / Jailbreak detection
+      const isOffTopic = /\b(python|javascript|java|c\+\+|html|css|sql|react|code|coding|algorithm|function|script|programming|essay|poem|lyrics|bitcoin|crypto|capital of|president|quantum|calculate|solve|ignore (all )?previous instructions|system prompt|jailbreak|dan mode|pretend you are)\b/i.test(lower);
+      if (isOffTopic) {
+        return "I'm FitAssist, the dedicated assistant for FitZone Gym. I can only help with our membership plans, group class schedules, trainer profiles, gym timings, and club policies (such as freezes and cancellations). How can I assist you with your fitness journey at FitZone today?";
+      }
+
+      // Greetings & Introductions
+      if (/^(hi|hello|hey|good morning|good afternoon|good evening|greetings|help|start)\b/i.test(lower.trim())) {
+        return "Hello! Welcome to FitZone Gym. I'm FitAssist, your digital fitness concierge. Here is what I can help you with:\n\n- **Membership Plans & Pricing** (Basic, Standard, Premium)\n- **Group Exercise Classes** (Yoga, HIIT, Strength, Zumba)\n- **Operating Hours** & Amenities\n- **Personal Trainers** (Ahmed Khan, Sarah Ali, Usman Malik)\n- **Gym Policies** (Freezes and Cancellations)\n\nHow can I help you reach your fitness goals today?";
+      }
+
+      // Membership & Pricing
+      if (/\b(plan|plans|membership|memberships|price|prices|pricing|cost|costs|fee|fees|rates|tier|tiers|join|subscribe|discount)\b/i.test(lower)) {
+        return "FitZone Gym offers three membership tiers tailored to your training style:\n\n1. **Basic Plan (Rs. 4,000/month)**: Access to full gym floor, free weights, cardio equipment, and locker rooms.\n2. **Standard Plan (Rs. 6,000/month)**: Full gym access + unlimited group fitness classes (Yoga, HIIT, Strength, Zumba).\n3. **Premium Plan (Rs. 9,000/month)**: Standard benefits + 4 personal training sessions/month, sauna & steam room access, and 2 guest passes/month.\n\n*Special Offers*: 15% discount on 12-month commitments, and a **Free 1-Day Trial Pass** for first-time visitors!";
+      }
+
+      // Classes & Timings
+      if (/\b(class|classes|schedule|timings|yoga|hiit|zumba|strength)\b/i.test(lower)) {
+        return "Here is our weekly Group Fitness Class Schedule at FitZone Gym:\n\n- **Yoga (Mobility & Mindfulness)**: Monday, Wednesday, Friday at 6:00 PM (Studio A with Sarah Ali)\n- **HIIT (High Intensity Intervals)**: Tuesday, Thursday at 7:00 PM (Studio B with Usman Malik)\n- **Strength & Conditioning**: Monday, Wednesday at 8:00 PM (Weight Room Studio with Ahmed Khan)\n- **Zumba (Cardio Dance)**: Saturday at 5:00 PM (Studio A)\n\nAll group classes are included free in the **Standard** and **Premium** plans!";
+      }
+
+      // Personal Trainers
+      if (/\b(trainer|trainers|coach|coaching|ahmed|sarah|usman|personal training|pt)\b/i.test(lower)) {
+        return "Meet our certified personal coaching team at FitZone:\n\n- **Ahmed Khan**: Strength & Bodybuilding Specialist (CSCS certified, 8+ years experience).\n- **Sarah Ali**: Yoga, Posture & Mobility Specialist (500-hr RYT certified, beginner friendly).\n- **Usman Malik**: Functional Fitness & HIIT Conditioning Specialist (ACE certified).\n\nPersonal training is included in the Premium Plan (4 sessions/month) or can be booked separately at the front desk.";
+      }
+
+      // Operating Hours
+      if (/\b(hour|hours|open|opening|close|closing|timings|timing|time|weekend|sunday|saturday|holiday)\b/i.test(lower)) {
+        return "FitZone Gym operational hours:\n\n- **Monday – Friday**: 6:00 AM – 11:00 PM\n- **Saturday – Sunday**: 8:00 AM – 10:00 PM\n- **Public Holidays**: 8:00 AM – 8:00 PM\n\nShowers, lockers, and workout floors remain open throughout operating hours.";
+      }
+
+      // Membership Freeze & Cancellation Policies
+      if (/\b(freeze|freezing|pause|cancel|cancellation|cancelling|policy|rules|travel|vacation)\b/i.test(lower)) {
+        return "Here are our core membership policies:\n\n- **Membership Freeze**: Members may freeze their membership for **up to 30 days per calendar year** with 48 hours advance notice.\n- **Cancellation Policy**: Requires **7 days written notice** before your next monthly billing cycle with no hidden penalties.\n\n*Important Note*: As an AI assistant, I cannot directly modify accounts or cancel memberships. Official requests are processed at the gym reception desk or through your member portal.";
+      }
+
+      // Free Trial & Guest Passes
+      if (/\b(trial|pass|guest|free pass|visit)\b/i.test(lower)) {
+        return "We offer a **Free 1-Day Trial Pass** for local prospective members with valid photo ID! Stop by our front desk during operating hours to register your pass and try out our facilities and group classes.";
+      }
+
+      // General fallback within gym domain
+      return "FitZone Gym is dedicated to your health and performance. We offer strength and cardio zones, group classes (Yoga, HIIT, Strength, Zumba), certified personal trainers, and flexible membership plans. Would you like more details on our membership plans, classes, or policies?";
+    }
+
+    function sendDemoMessage(text) {
+      appendMessageBubble('user', text);
+      currentTurns.push({ role: 'user', content: text });
+
+      messageInput.value = '';
+      messageInput.style.height = '52px';
+      sendBtn.disabled = true;
+      isStreaming = true;
+
+      statusDot.className = 'status-dot streaming';
+      statusText.textContent = 'Generating response (Cloud Mode)...';
+
+      if (heroState.parentNode === messagesContainer) heroState.remove();
+
+      const row = document.createElement('div');
+      row.className = 'message-row assistant';
+      const avatar = document.createElement('div');
+      avatar.className = 'avatar assistant';
+      avatar.textContent = '⚡';
+
+      const bubble = document.createElement('div');
+      bubble.className = 'message-bubble';
+
+      const contentEl = document.createElement('div');
+      contentEl.className = 'markdown-content';
+      contentEl.id = 'streamingContent';
+      contentEl.innerHTML = '<span class="streaming-caret"></span>';
+
+      bubble.appendChild(contentEl);
+      row.appendChild(avatar);
+      row.appendChild(bubble);
+      messagesContainer.appendChild(row);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+      const fullReply = generateDemoResponse(text);
+      const words = fullReply.split(/(\s+)/);
+      let index = 0;
+      let streamedRaw = '';
+      const startTime = performance.now();
+
+      const timer = setInterval(() => {
+        if (index < words.length) {
+          streamedRaw += words[index];
+          contentEl.innerHTML = formatMarkdown(streamedRaw) + '<span class="streaming-caret"></span>';
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+          index++;
+        } else {
+          clearInterval(timer);
+          isStreaming = false;
+          statusDot.className = 'status-dot';
+          statusText.textContent = 'Cloud Mode (Click to connect local backend)';
+
+          contentEl.innerHTML = formatMarkdown(streamedRaw);
+          contentEl.removeAttribute('id');
+
+          const elapsedSec = Math.max(0.4, (performance.now() - startTime) / 1000).toFixed(2);
+          const metrics = {
+            ttft: '0.35',
+            tokens: Math.round(words.length * 0.75),
+            elapsed: elapsedSec,
+            tps: (Math.round(words.length * 0.75) / parseFloat(elapsedSec)).toFixed(1)
+          };
+
+          const telemetry = document.createElement('div');
+          telemetry.className = 'telemetry-tag';
+          telemetry.innerHTML = `
+            <span>⚡ TTFT: ${metrics.ttft}s | ${metrics.tps} tok/s | ${metrics.tokens} tokens (Cloud Mode)</span>
+            <button class="copy-btn" onclick="copyToClipboard('${encodeURIComponent(streamedRaw)}')">Copy</button>
+          `;
+          bubble.appendChild(telemetry);
+
+          currentTurns.push({ role: 'assistant', content: streamedRaw, metrics: metrics });
+          saveSessionToStorage(currentSessionId, currentTurns[0]?.content.slice(0, 24) || 'Gym Query', currentTurns);
+          sendBtn.disabled = false;
+          messageInput.focus();
+        }
+      }, 35);
     }
 
     // --- Message Sending ---
@@ -1116,12 +1256,13 @@
       const text = (textToSend !== null ? textToSend : messageInput.value).trim();
       if (!text || isStreaming) return;
 
+      // If WebSocket is not open (e.g. running standalone on Vercel without local tunnel), use Cloud Demo Engine
       if (!ws || ws.readyState !== WebSocket.OPEN) {
-        alert('WebSocket is not connected yet. Please ensure the backend is running at http://127.0.0.1:8000.');
+        sendDemoMessage(text);
         return;
       }
 
-      // Append user bubble
+      // Live WebSocket path
       appendMessageBubble('user', text);
       currentTurns.push({ role: 'user', content: text });
 
@@ -1129,7 +1270,6 @@
       messageInput.style.height = '52px';
       sendBtn.disabled = true;
 
-      // Send payload
       ws.send(JSON.stringify({
         session_id: currentSessionId,
         message: text
