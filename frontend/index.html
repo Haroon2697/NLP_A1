@@ -964,15 +964,30 @@
     };
 
     // --- WebSocket Connection ---
+    function getWebSocketUrl() {
+      const saved = localStorage.getItem('fitzone_ws_url');
+      if (saved) return saved;
+      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      if (isLocal && window.location.port) {
+        const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+        return `${protocol}://${window.location.host}/ws/chat`;
+      }
+      return 'ws://127.0.0.1:8000/ws/chat';
+    }
+
     function connectWebSocket() {
-      const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-      const host = window.location.host || '127.0.0.1:8000';
-      const wsUrl = `${protocol}://${host}/ws/chat`;
+      const wsUrl = getWebSocketUrl();
 
       statusDot.className = 'status-dot';
-      statusText.textContent = 'Connecting to Local CPU...';
+      statusText.textContent = 'Connecting to Backend...';
 
-      ws = new WebSocket(wsUrl);
+      try {
+        ws = new WebSocket(wsUrl);
+      } catch (e) {
+        statusDot.className = 'status-dot offline';
+        statusText.textContent = 'Invalid WS URL (Click to edit)';
+        return;
+      }
 
       ws.onopen = () => {
         statusDot.className = 'status-dot';
@@ -1206,6 +1221,22 @@
       const isDark = document.body.getAttribute('data-theme') === 'dark';
       setTheme(!isDark);
     });
+
+    // Allow changing backend WebSocket endpoint on-demand (essential for Vercel deployment)
+    const statusIndicator = document.querySelector('.status-indicator');
+    if (statusIndicator) {
+      statusIndicator.style.cursor = 'pointer';
+      statusIndicator.title = 'Click to configure Backend WebSocket URL';
+      statusIndicator.addEventListener('click', () => {
+        const current = localStorage.getItem('fitzone_ws_url') || getWebSocketUrl();
+        const entered = prompt('Configure Backend WebSocket Endpoint:\n(Default local: ws://127.0.0.1:8000/ws/chat\nFor remote/tunnel: wss://your-ngrok.app/ws/chat)', current);
+        if (entered !== null && entered.trim()) {
+          localStorage.setItem('fitzone_ws_url', entered.trim());
+          if (ws) ws.close();
+          connectWebSocket();
+        }
+      });
+    }
 
     // --- Initialization ---
     const savedTheme = localStorage.getItem('fitzone_theme') || 'light';
