@@ -558,6 +558,56 @@
       color: var(--primary);
     }
 
+    /* RAG Grounding Citations Box */
+    .citations-box {
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: var(--bg-body);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 0.78rem;
+    }
+    .citations-header {
+      font-weight: 600;
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .citations-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .citation-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1px solid var(--accent);
+      font-size: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-decoration: none;
+    }
+    .citation-chip:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-sm);
+    }
+    .citation-chip .chip-id {
+      opacity: 0.75;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+    }
+
     /* Typing Cursor Indicator */
     .streaming-caret {
       display: inline-block;
@@ -899,6 +949,11 @@
       return html || `<p>${text}</p>`;
     }
 
+    // --- State variables for RAG Citations ---
+    let pendingCitations = [];
+    let pendingRetrievalMs = 0;
+    let pendingCached = false;
+
     // --- UI Rendering ---
     function renderTurns() {
       messagesContainer.innerHTML = '';
@@ -908,12 +963,12 @@
       }
 
       currentTurns.forEach((turn, idx) => {
-        appendMessageBubble(turn.role, turn.content, turn.metrics, false);
+        appendMessageBubble(turn.role, turn.content, turn.metrics, turn.citations || null, false);
       });
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 
-    function appendMessageBubble(role, content, metrics = null, animate = false) {
+    function appendMessageBubble(role, content, metrics = null, citations = null, animate = false) {
       if (heroState.parentNode === messagesContainer) {
         heroState.remove();
       }
@@ -933,11 +988,32 @@
       contentEl.innerHTML = formatMarkdown(content);
       bubble.appendChild(contentEl);
 
+      // Render Citations box if provided
+      if (role === 'assistant' && citations && citations.length > 0) {
+        const citationsBox = document.createElement('div');
+        citationsBox.className = 'citations-box';
+        citationsBox.innerHTML = `
+          <div class="citations-header">📚 Grounded in FitZone Documents:</div>
+          <div class="citations-list">
+            ${citations.map(c => `
+              <div class="citation-chip" title="${(c.snippet || '').replace(/"/g, '&quot;')}" onclick="showCitationDetail('${encodeURIComponent(JSON.stringify(c))}')">
+                <span>📄 ${c.title || 'Document'}</span>
+                <span class="chip-id">[${c.doc_id || 'DOC'}]</span>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        bubble.appendChild(citationsBox);
+      }
+
       if (role === 'assistant' && metrics) {
         const telemetry = document.createElement('div');
         telemetry.className = 'telemetry-tag';
+        const ragLabel = (metrics.retrieval_ms !== undefined)
+          ? ` | RAG: ${metrics.retrieval_ms}ms${metrics.cached ? ' (cache)' : ''}`
+          : '';
         telemetry.innerHTML = `
-          <span>⚡ TTFT: ${metrics.ttft || 0}s | ${metrics.tps || 0} tok/s | ${metrics.tokens || 0} tokens</span>
+          <span>⚡ TTFT: ${metrics.ttft || 0}s${ragLabel} | ${metrics.tps || 0} tok/s | ${metrics.tokens || 0} tokens</span>
           <button class="copy-btn" onclick="copyToClipboard('${encodeURIComponent(content)}')">Copy</button>
         `;
         bubble.appendChild(telemetry);
@@ -955,6 +1031,15 @@
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
       return bubble;
     }
+
+    window.showCitationDetail = function(encoded) {
+      try {
+        const c = JSON.parse(decodeURIComponent(encoded));
+        alert(`📄 Document: ${c.title}\nID: ${c.doc_id}\nCategory: ${c.category}\nFile: ${c.source_file}\n\n🔍 Grounded Excerpt:\n"${c.snippet || ''}"`);
+      } catch (e) {
+        console.error(e);
+      }
+    };
 
     window.copyToClipboard = function(encodedText) {
       const text = decodeURIComponent(encodedText);
@@ -1003,6 +1088,10 @@
             streamStartTime = performance.now();
             streamFirstTokenTime = null;
             tokenChunkCount = 0;
+            pendingCitations = [];
+            pendingRetrievalMs = 0;
+            pendingCached = false;
+
             statusDot.className = 'status-dot streaming';
             statusText.textContent = 'Generating tokens on CPU...';
 
@@ -1030,6 +1119,13 @@
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
             currentStreamBubble = bubble;
+            return;
+          }
+
+          if (data.type === 'citations') {
+            pendingCitations = data.sources || [];
+            pendingRetrievalMs = data.retrieval_ms || 0;
+            pendingCached = data.cached || false;
             return;
           }
 
@@ -1062,30 +1158,59 @@
               contentEl.removeAttribute('id');
             }
 
+            const citationsToUse = (data.citations && data.citations.length > 0) ? data.citations : pendingCitations;
+            const retMs = (data.retrieval_ms !== undefined) ? data.retrieval_ms : pendingRetrievalMs;
+            const isCached = (data.cached !== undefined) ? data.cached : pendingCached;
+
             const metrics = {
               ttft: data.ttft || (streamFirstTokenTime ? streamFirstTokenTime.toFixed(2) : '1.0'),
               tokens: data.tokens || tokenChunkCount,
               elapsed: data.elapsed || 0,
-              tps: data.tps || (data.tokens && data.elapsed ? (data.tokens / data.elapsed).toFixed(1) : '4.1')
+              tps: data.tps || (data.tokens && data.elapsed ? (data.tokens / data.elapsed).toFixed(1) : '4.1'),
+              retrieval_ms: retMs,
+              cached: isCached
             };
 
             if (currentStreamBubble) {
+              // Append visible citation chips
+              if (citationsToUse && citationsToUse.length > 0) {
+                const citationsBox = document.createElement('div');
+                citationsBox.className = 'citations-box';
+                citationsBox.innerHTML = `
+                  <div class="citations-header">📚 Grounded in FitZone Documents:</div>
+                  <div class="citations-list">
+                    ${citationsToUse.map(c => `
+                      <div class="citation-chip" title="${(c.snippet || '').replace(/"/g, '&quot;')}" onclick="showCitationDetail('${encodeURIComponent(JSON.stringify(c))}')">
+                        <span>📄 ${c.title || 'Document'}</span>
+                        <span class="chip-id">[${c.doc_id || 'DOC'}]</span>
+                      </div>
+                    `).join('')}
+                  </div>
+                `;
+                currentStreamBubble.appendChild(citationsBox);
+              }
+
+              const ragLabel = (retMs > 0)
+                ? ` | RAG: ${retMs}ms${isCached ? ' (cache)' : ''}`
+                : '';
+
               const telemetry = document.createElement('div');
               telemetry.className = 'telemetry-tag';
               telemetry.innerHTML = `
-                <span>⚡ TTFT: ${metrics.ttft}s | ${metrics.tps} tok/s | ${metrics.tokens} tokens</span>
+                <span>⚡ TTFT: ${metrics.ttft}s${ragLabel} | ${metrics.tps} tok/s | ${metrics.tokens} tokens</span>
                 <button class="copy-btn" onclick="copyToClipboard('${encodeURIComponent(finalText)}')">Copy</button>
               `;
               currentStreamBubble.appendChild(telemetry);
               currentStreamBubble = null;
             }
 
-            currentTurns.push({ role: 'assistant', content: finalText, metrics: metrics });
+            currentTurns.push({ role: 'assistant', content: finalText, metrics: metrics, citations: citationsToUse });
             saveSessionToStorage(currentSessionId, currentTurns[0]?.content.slice(0, 24) || 'Gym Query', currentTurns);
             sendBtn.disabled = false;
             messageInput.focus();
             return;
           }
+
 
           if (data.type === 'error') {
             isStreaming = false;
