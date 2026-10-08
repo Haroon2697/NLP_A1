@@ -191,8 +191,14 @@ def test_api_rag_stats_endpoint():
     assert data["indexed_chunks"] >= 100
 
 
-def test_api_chat_rest_returns_citations():
+def test_api_chat_rest_returns_citations(monkeypatch):
     """Checks /api/chat returns source citations for grounded queries."""
+    from unittest.mock import AsyncMock
+    import backend.app.main as main_mod
+
+    mock_gen = AsyncMock(return_value=("Cancellation requires 30 days notice per POL-02.", {"ttft_seconds": 0.5, "total_seconds": 1.2, "tokens_per_second": 10.0}))
+    monkeypatch.setattr(main_mod, "generate_response", mock_gen)
+
     res = client.post("/api/chat", json={
         "session_id": "test_rest_rag",
         "message": "What is the policy for membership cancellation?",
@@ -201,4 +207,6 @@ def test_api_chat_rest_returns_citations():
     data = res.json()
     assert "reply" in data
     assert "citations" in data
+    assert len(data["citations"]) > 0
     assert "retrieval_metrics" in data
+
