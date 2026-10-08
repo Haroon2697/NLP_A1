@@ -1,0 +1,92 @@
+{
+  "benchmark_timestamp": "2026-10-08 01:59:14",
+  "hardware_target": "Local CPU",
+  "embedding_model": "all-MiniLM-L6-v2 (ONNX runtime)",
+  "vector_store": "ChromaDB Persistent (Cosine space)",
+  "sparse_retriever": "BM25Okapi",
+  "hybrid_algorithm": "Reciprocal Rank Fusion (w_dense=0.65, w_sparse=0.35)",
+  "indexed_chunks": 182,
+  "sample_queries_count": 10,
+  "target_latency_ceiling_ms": 1000.0,
+  "metrics_ms": {
+    "cold_average_ms": 368.85,
+    "cold_median_ms": 355.83,
+    "cold_min_ms": 306.59,
+    "cold_max_ms": 486.92,
+    "cold_p95_ms": 486.92,
+    "cached_average_ms": 0.006
+  },
+  "target_met": true,
+  "query_results": [
+    {
+      "query": "What is the monthly price of the Basic Membership?",
+      "cold_latency_ms": 486.92,
+      "chunks_retrieved": 4,
+      "top_match": "FitZone Standard Membership Plan",
+      "cached_latency_ms": 0.017
+    },
+    {
+      "query": "Can I freeze or pause my gym membership while traveling?",
+      "cold_latency_ms": 396.35,
+      "chunks_retrieved": 4,
+      "top_match": "FitZone Policy: Membership Freeze & Pause Guidelines",
+      "cached_latency_ms": 0.009
+    },
+    {
+      "query": "Who teaches Vinyasa Yoga and what days is it offered?",
+      "cold_latency_ms": 441.04,
+      "chunks_retrieved": 4,
+      "top_match": "FitZone Class Guide: Vinyasa Yoga Flow",
+      "cached_latency_ms": 0.006
+    },
+    {
+      "query": "What are Ahmed Khan's credentials and personal training rates?",
+      "cold_latency_ms": 355.94,
+      "chunks_retrieved": 4,
+      "top_match": "FitZone Trainer Profile: Ahmed Khan",
+      "cached_latency_ms": 0.005
+    },
+    {
+      "query": "What is the cancellation notice period for monthly contracts?",
+      "cold_latency_ms": 358.16,
+      "chunks_retrieved": 4,
+      "top_match": "FitZone Policy: Membership Cancellation & Termination",
+      "cached_latency_ms": 0.005
+    },
+    {
+      "query": "Do you offer student discounts and what are the eligible hours?",
+      "cold_latency_ms": 355.72,
+      "chunks_retrieved": 4,
+      "top_match": "FitZone Student Membership Program",
+      "cached_latency_ms": 0.004
+    },
+    {
+      "query": "What are the rules and attire for the sauna and steam room?",
+      "cold_latency_ms": 310.98,
+      "chunks_retrieved": 4,
+      "top_match": "FitZone Policy: Sauna & Eucalyptus Steam Room Etiquette",
+      "cached_latency_ms": 0.004
+    },
+    {
+      "query": "How much does an InBody 570 body composition scan cost?",
+      "cold_latency_ms": 341.39,
+      "chunks_retrieved": 4,
+      "top_match": "FitZone Service: InBody 570 Body Composition Analysis",
+      "cached_latency_ms": 0.004
+    },
+    {
+      "query": "What is included in the Black Card Executive VIP membership?",
+      "cold_latency_ms": 306.59,
+      "chunks_retrieved": 4,
+      "top_match": "FitZone Black Card Executive Membership",
+      "cached_latency_ms": 0.004
+    },
+    {
+      "query": "Can I bring a guest with a Standard membership pass?",
+      "cold_latency_ms": 335.37,
+      "chunks_retrieved": 4,
+      "top_match": "FitZone Policy: Guest Pass & Visitor Privileges",
+      "cached_latency_ms": 0.004
+    }
+  ]
+}

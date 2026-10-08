@@ -93,3 +93,12 @@ def test_reset_session():
 
     manager.reset_session("s_reset")
     assert len(manager.get_session("s_reset")) == 0
+
+
+def test_constraint_no_tools_or_agents():
+    """Validates the strict assignment constraint: No external tools or agents allowed, RAG only."""
+    manager = ConversationManager()
+    prompt = manager.build_prompt_messages("s_test", "Hi")[0]["content"]
+    assert "No External Tools or Agents" in prompt
+    assert "Retrieval-Augmented Generation" in prompt
+
