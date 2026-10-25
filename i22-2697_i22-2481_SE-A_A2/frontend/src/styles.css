@@ -1,0 +1,270 @@
+:root {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --bg-app: #f8fafc;
+  --panel-bg: #ffffff;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+  --primary: #059669;
+  --primary-hover: #047857;
+  --user-bg: #059669;
+  --assistant-bg: #ffffff;
+}
+
+.dark {
+  --bg-app: #090d16;
+  --panel-bg: #1e293b;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --border: #334155;
+  --primary: #10b981;
+  --primary-hover: #34d399;
+  --user-bg: #059669;
+  --assistant-bg: #1e293b;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-app);
+  color: var(--text-main);
+  min-height: 100vh;
+}
+
+.app-shell {
+  max-width: 1020px;
+  margin: 24px auto;
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 92vh;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel-bg);
+}
+
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.topbar h1 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.brand-badge {
+  background: #ecfdf5;
+  color: #059669;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+
+.engine-pill {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  padding: 3px 8px;
+  border-radius: 12px;
+}
+
+.topbar-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.topbar-actions button {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  background: transparent;
+  color: var(--text-main);
+}
+
+.topbar-actions .new-btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+}
+
+.chat-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 24px;
+  overflow: hidden;
+}
+
+.messages-area {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-right: 8px;
+}
+
+.hero-box {
+  margin: auto;
+  text-align: center;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+}
+
+.hero-badge {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.starter-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.starter-card {
+  padding: 12px 14px;
+  text-align: left;
+  border: 1px solid var(--border);
+  background: var(--panel-bg);
+  color: var(--text-main);
+  border-radius: 10px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.starter-card:hover {
+  border-color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.message-row {
+  display: flex;
+  gap: 12px;
+  max-width: 80%;
+}
+
+.message-row.user {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.message-row.assistant {
+  align-self: flex-start;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+}
+
+.message-row.assistant .avatar {
+  background: #10b981;
+  color: white;
+}
+
+.message-bubble {
+  border-radius: 12px;
+  padding: 12px 16px;
+  line-height: 1.5;
+  font-size: 0.92rem;
+  border: 1px solid var(--border);
+}
+
+.message-row.user .message-bubble {
+  background: var(--user-bg);
+  color: white;
+  border: none;
+}
+
+.message-row.assistant .message-bubble {
+  background: var(--assistant-bg);
+  color: var(--text-main);
+}
+
+.telemetry-bar {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--border);
+  font-size: 0.75rem;
+  font-family: monospace;
+  color: var(--text-muted);
+}
+
+.typing-indicator {
+  font-size: 0.85rem;
+  color: var(--primary);
+  padding: 8px;
+}
+
+.composer-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.composer-row input {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--panel-bg);
+  color: var(--text-main);
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.composer-row input:focus {
+  border-color: var(--primary);
+}
+
+.composer-row button {
+  padding: 12px 20px;
+  border-radius: 10px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.status-bar {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
