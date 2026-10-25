@@ -1,0 +1,66 @@
+{
+  "timestamp": "2026-10-25T16:34:51Z",
+  "hardware": "Local CPU (Intel / AMD)",
+  "target_max_e2e_ms": 2000.0,
+  "asr": {
+    "engine": "faster-whisper (CTranslate2 int8 CPU)",
+    "trials": 3,
+    "mean_latency_ms": 1.82,
+    "min_latency_ms": 1.46,
+    "max_latency_ms": 2.54
+  },
+  "retrieval": {
+    "engine": "ChromaDB (Dense) + BM25 (Sparse) + RRF",
+    "queries_tested": 4,
+    "mean_latency_ms": 534.91,
+    "min_latency_ms": 398.93,
+    "max_latency_ms": 895.47
+  },
+  "tools": {
+    "get_weather_ms": 0.11,
+    "calculate_membership_ms": 0.07,
+    "check_class_schedule_ms": 0.08,
+    "crm_lookup_ms": 2.11
+  },
+  "tts": {
+    "engine": "piper-tts / local neural synthesis",
+    "sample_count": 3,
+    "mean_first_audio_ms": 3.67,
+    "min_first_audio_ms": 3.08,
+    "max_first_audio_ms": 4.7
+  },
+  "single_turn": {
+    "query": "What is the schedule for Yoga on Monday?",
+    "asr_latency_ms": 1.74,
+    "retrieval_latency_ms": 405.23,
+    "llm_ttft_ms": 1024.76,
+    "tts_first_audio_ms": 5.2,
+    "end_to_end_ms": 1437.02,
+    "under_2s_target": true
+  },
+  "concurrency": {
+    "concurrent_users": 2,
+    "total_batch_ms": 1776.26,
+    "per_user_results": [
+      {
+        "query": "What is the schedule for Yoga on Monday?",
+        "asr_latency_ms": 2.29,
+        "retrieval_latency_ms": 5.32,
+        "llm_ttft_ms": 1099.17,
+        "tts_first_audio_ms": 2.16,
+        "end_to_end_ms": 1108.99,
+        "under_2s_target": true
+      },
+      {
+        "query": "Can I freeze my membership if I travel?",
+        "asr_latency_ms": 384.63,
+        "retrieval_latency_ms": 334.26,
+        "llm_ttft_ms": 875.81,
+        "tts_first_audio_ms": 6.55,
+        "end_to_end_ms": 1775.95,
+        "under_2s_target": true
+      }
+    ],
+    "average_e2e_ms": 1442.47
+  }
+}

@@ -210,3 +210,25 @@ def test_api_chat_rest_returns_citations(monkeypatch):
     assert len(data["citations"]) > 0
     assert "retrieval_metrics" in data
 
+
+@pytest.mark.anyio
+async def test_grounded_answer_factual_rates_senior_citizen():
+    """Verifies that grounded query for senior citizen plan returns exact rates and factual details."""
+    from backend.app.llm_client import stream_response
+
+    manager = ConversationManager()
+    messages, citations, _ = await manager.async_build_prompt_messages(
+        "test_senior_rates", "How much is the senior citizen plan?"
+    )
+    tokens = []
+    async for tok in stream_response(messages):
+        tokens.append(tok)
+    reply = "".join(tokens)
+
+    # Validate factual answers from MEM-07
+    assert "MEM-07" in reply
+    assert "3,200" in reply
+    assert "Registration Fee" in reply
+    assert "Waived" in reply
+
+

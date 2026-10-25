@@ -13,10 +13,18 @@ def get_setting(name: str, default: str | None = None) -> str | None:
 OLLAMA_BASE_URL = get_setting("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
 OLLAMA_MODEL = get_setting("OLLAMA_MODEL", "qwen2.5:3b-instruct")
 MAX_HISTORY_PAIRS = int(get_setting("MAX_HISTORY_PAIRS", "6"))
-MAX_RESPONSE_TOKENS = int(get_setting("MAX_RESPONSE_TOKENS", "256"))
+MAX_RESPONSE_TOKENS = int(get_setting("MAX_RESPONSE_TOKENS", "512"))
 TEMPERATURE = float(get_setting("TEMPERATURE", "0.3"))
 TOP_P = float(get_setting("TOP_P", "0.9"))
-NUM_CTX = int(get_setting("NUM_CTX", "2048"))
+NUM_CTX = int(get_setting("NUM_CTX", "4096"))
 
 HOST = get_setting("HOST", "0.0.0.0")
 PORT = int(get_setting("PORT", "8000"))
+
+# Voice pipeline settings
+ASR_MODEL_SIZE = get_setting("ASR_MODEL_SIZE", "base.en")
+ENABLE_VOICE = get_setting("ENABLE_VOICE", "true").lower() in ("true", "1", "yes")
+
+# Tool settings
+ENABLE_TOOLS = get_setting("ENABLE_TOOLS", "true").lower() in ("true", "1", "yes")
+TOOL_TIMEOUT_SECONDS = float(get_setting("TOOL_TIMEOUT_SECONDS", "10"))

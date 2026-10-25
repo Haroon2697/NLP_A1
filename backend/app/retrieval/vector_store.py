@@ -115,7 +115,7 @@ class RetrievalEngine:
 
         try:
             # 1. Dense Vector Search
-            fetch_k = max(top_k * 2, 8)
+            fetch_k = max(top_k * 4, 16)
             chroma_results = self.collection.query(
                 query_texts=[cleaned_query],
                 n_results=fetch_k,
@@ -154,7 +154,7 @@ class RetrievalEngine:
                 if bm25_chunks:
                     # Fuse using Reciprocal Rank Fusion
                     final_chunks = reciprocal_rank_fusion(
-                        filtered_vector_chunks or vector_chunks[:top_k],
+                        filtered_vector_chunks or vector_chunks[:fetch_k],
                         bm25_chunks,
                         top_k=top_k,
                     )

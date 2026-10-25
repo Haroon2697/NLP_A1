@@ -82,61 +82,50 @@ def chunk_document(
     chunk_overlap: int = CHUNK_OVERLAP,
 ) -> List[Dict[str, Any]]:
     """
-    Section-aware semantic chunking.
-    Splits documents by Markdown headings (##) and subdivides long sections
-    with a sliding window and overlap while preserving document metadata.
+    Section-aware semantic chunking with document context preservation.
+    1. Indexes the full document as chunk 1 so comprehensive details (Overview, Rates,
+       Hours, Benefits) are never separated.
+    2. Indexes individual sections with the document title and ID prepended as context,
+       ensuring queries matching specific sections retain full document metadata.
     """
     content = filepath.read_text(encoding="utf-8")
     meta = parse_metadata_from_markdown(content)
-
-    # Split into sections by Markdown headers (## )
-    sections = re.split(r"\n(?=## )", content)
     chunks: List[Dict[str, Any]] = []
     chunk_idx = 0
 
-    for section in sections:
+    # 1. Primary Full Document Chunk
+    chunk_idx += 1
+    chunks.append({
+        "id": f"{meta['doc_id']}_c{chunk_idx}",
+        "text": content.strip(),
+        "doc_id": meta["doc_id"],
+        "title": meta["title"],
+        "category": meta["category"],
+        "source_file": filepath.name,
+        "chunk_index": chunk_idx,
+    })
+
+    # 2. Section Chunks with Document Header Injected
+    sections = re.split(r"\n(?=## )", content)
+    # sections[0] contains the document title and top metadata
+    for section in sections[1:]:
         section_cleaned = section.strip()
         if not section_cleaned:
             continue
 
-        if len(section_cleaned) <= chunk_size:
-            chunk_idx += 1
-            chunks.append({
-                "id": f"{meta['doc_id']}_c{chunk_idx}",
-                "text": section_cleaned,
-                "doc_id": meta["doc_id"],
-                "title": meta["title"],
-                "category": meta["category"],
-                "source_file": filepath.name,
-                "chunk_index": chunk_idx,
-            })
-        else:
-            # Subdivide section with character overlap on word boundaries
-            start = 0
-            while start < len(section_cleaned):
-                end = min(start + chunk_size, len(section_cleaned))
-                if end < len(section_cleaned):
-                    # Find nearest space or newline to avoid cutting words
-                    split_point = section_cleaned.rfind(" ", start, end)
-                    if split_point > start + 100:
-                        end = split_point
+        context_header = f"# {meta['title']} [Doc: {meta['doc_id']}]\n"
+        chunk_text = f"{context_header}\n{section_cleaned}"
 
-                chunk_text = section_cleaned[start:end].strip()
-                if chunk_text:
-                    chunk_idx += 1
-                    chunks.append({
-                        "id": f"{meta['doc_id']}_c{chunk_idx}",
-                        "text": chunk_text,
-                        "doc_id": meta["doc_id"],
-                        "title": meta["title"],
-                        "category": meta["category"],
-                        "source_file": filepath.name,
-                        "chunk_index": chunk_idx,
-                    })
-
-                if end >= len(section_cleaned):
-                    break
-                start = max(start + 1, end - chunk_overlap)
+        chunk_idx += 1
+        chunks.append({
+            "id": f"{meta['doc_id']}_c{chunk_idx}",
+            "text": chunk_text,
+            "doc_id": meta["doc_id"],
+            "title": meta["title"],
+            "category": meta["category"],
+            "source_file": filepath.name,
+            "chunk_index": chunk_idx,
+        })
 
     return chunks
 

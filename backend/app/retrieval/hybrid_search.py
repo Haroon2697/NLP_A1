@@ -85,9 +85,9 @@ class BM25Retriever:
 def reciprocal_rank_fusion(
     vector_results: List[Dict[str, Any]],
     bm25_results: List[Dict[str, Any]],
-    k_constant: int = 60,
-    dense_weight: float = 0.65,
-    sparse_weight: float = 0.35,
+    k_constant: int = 40,
+    dense_weight: float = 0.5,
+    sparse_weight: float = 0.5,
     top_k: int = 4,
 ) -> List[Dict[str, Any]]:
     """

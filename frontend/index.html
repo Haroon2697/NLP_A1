@@ -643,7 +643,7 @@
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: 14px;
-      padding: 14px 50px 14px 18px;
+      padding: 14px 90px 14px 18px;
       font-size: 0.95rem;
       font-family: var(--font-main);
       color: var(--text-main);
@@ -660,14 +660,19 @@
       box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
     }
 
-    .send-btn {
+    .composer-buttons {
       position: absolute;
       right: 10px;
       bottom: 12px;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .send-btn, .mic-btn {
       width: 36px;
       height: 36px;
       border-radius: 10px;
-      background: var(--primary);
       color: white;
       border: none;
       display: flex;
@@ -675,6 +680,30 @@
       justify-content: center;
       cursor: pointer;
       transition: all 0.15s ease;
+      font-size: 1rem;
+    }
+
+    .send-btn {
+      background: var(--primary);
+    }
+
+    .mic-btn {
+      background: #6366f1;
+    }
+
+    .mic-btn:hover:not(:disabled) {
+      background: #4f46e5;
+      transform: scale(1.05);
+    }
+
+    .mic-btn.recording {
+      background: #ef4444;
+      animation: mic-pulse 1s infinite alternate;
+    }
+
+    @keyframes mic-pulse {
+      from { transform: scale(1); box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
+      to { transform: scale(1.08); box-shadow: 0 0 0 8px rgba(239,68,68,0); }
     }
 
     .send-btn:hover:not(:disabled) {
@@ -682,11 +711,111 @@
       transform: scale(1.05);
     }
 
-    .send-btn:disabled {
+    .send-btn:disabled, .mic-btn:disabled {
       background: var(--border-color);
       color: var(--text-muted);
       cursor: not-allowed;
       transform: none;
+    }
+
+    /* Voice Status Bar */
+    .voice-status {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      margin-bottom: 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .voice-status.active { display: flex; }
+
+    .voice-waveform {
+      display: flex;
+      gap: 2px;
+      align-items: center;
+      height: 20px;
+    }
+
+    .voice-waveform .bar {
+      width: 3px;
+      background: #ef4444;
+      border-radius: 2px;
+      animation: wave 0.5s ease-in-out infinite alternate;
+    }
+
+    .voice-waveform .bar:nth-child(1) { height: 6px; animation-delay: 0s; }
+    .voice-waveform .bar:nth-child(2) { height: 12px; animation-delay: 0.1s; }
+    .voice-waveform .bar:nth-child(3) { height: 18px; animation-delay: 0.2s; }
+    .voice-waveform .bar:nth-child(4) { height: 10px; animation-delay: 0.3s; }
+    .voice-waveform .bar:nth-child(5) { height: 14px; animation-delay: 0.15s; }
+
+    @keyframes wave {
+      from { transform: scaleY(0.4); }
+      to { transform: scaleY(1); }
+    }
+
+    .voice-status .transcript-preview {
+      flex: 1;
+      font-style: italic;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* Tool Call Indicator */
+    .tool-call-box {
+      margin: 8px 0;
+      padding: 8px 12px;
+      background: linear-gradient(135deg, #1e1b4b, #312e81);
+      border: 1px solid #4338ca;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      color: #c7d2fe;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    [data-theme="light"] .tool-call-box,
+    :not([data-theme]) .tool-call-box {
+      background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+      border-color: #a5b4fc;
+      color: #3730a3;
+    }
+
+    .tool-call-box .tool-icon { font-size: 1.1rem; }
+    .tool-call-box .tool-name { font-weight: 600; }
+    .tool-call-box .tool-status { margin-left: auto; font-size: 0.75rem; }
+
+    /* Audio Playback Controls */
+    .audio-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .audio-play-btn {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 3px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .audio-play-btn:hover {
+      color: var(--primary);
+      border-color: var(--primary);
     }
 
     .composer-hint {
@@ -812,18 +941,30 @@
       <!-- Composer Input Wrapper -->
       <div class="composer-wrapper">
         <div class="composer-container">
+          <div id="voiceStatus" class="voice-status">
+            <div class="voice-waveform">
+              <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+            </div>
+            <span id="voiceStatusText">🎙️ Recording...</span>
+            <span id="voiceTranscriptPreview" class="transcript-preview"></span>
+          </div>
           <textarea
             id="messageInput"
             class="input-box"
-            placeholder="Ask about FitZone plans, schedules, trainers, or gym policies..."
+            placeholder="Ask about FitZone plans, schedules, trainers, or gym policies... (or click 🎤 to speak)"
             rows="1"
           ></textarea>
-          <button id="sendBtn" class="send-btn" type="button" aria-label="Send message">
-            ➤
-          </button>
+          <div class="composer-buttons">
+            <button id="micBtn" class="mic-btn" type="button" aria-label="Toggle voice recording" title="Hold or click to speak">
+              🎤
+            </button>
+            <button id="sendBtn" class="send-btn" type="button" aria-label="Send message">
+              ➤
+            </button>
+          </div>
         </div>
         <p class="composer-hint">
-          FitZone Assistant runs 100% locally on CPU via Ollama (Qwen 2.5 3B). Zero cloud API calls.
+          FitAssist v3 — Voice + Tools + RAG | 100% Local CPU | Qwen 2.5 3B + Whisper ASR + Piper TTS
         </p>
       </div>
     </main>
@@ -840,11 +981,24 @@
     let streamFirstTokenTime = null;
     let tokenChunkCount = 0;
 
+    // Voice state
+    let isRecording = false;
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let audioContext = null;
+    let audioPlaybackQueue = [];
+    let isPlayingAudio = false;
+    let voiceMode = false;
+
     // DOM Elements
     const messagesContainer = document.getElementById('messagesContainer');
     const heroState = document.getElementById('heroState');
     const messageInput = document.getElementById('messageInput');
     const sendBtn = document.getElementById('sendBtn');
+    const micBtn = document.getElementById('micBtn');
+    const voiceStatus = document.getElementById('voiceStatus');
+    const voiceStatusText = document.getElementById('voiceStatusText');
+    const voiceTranscriptPreview = document.getElementById('voiceTranscriptPreview');
     const statusDot = document.getElementById('statusDot');
     const statusText = document.getElementById('statusText');
     const newChatBtn = document.getElementById('newChatBtn');
@@ -1122,10 +1276,64 @@
             return;
           }
 
+          if (data.type === 'transcript') {
+            // ASR transcript received
+            voiceTranscriptPreview.textContent = data.text || '';
+            if (data.is_final && data.text) {
+              voiceStatusText.textContent = '✅ Transcribed';
+              // Show the transcript as a user message
+              appendMessageBubble('user', data.text);
+              currentTurns.push({ role: 'user', content: data.text });
+              // Add ASR latency info
+              setTimeout(() => {
+                voiceStatus.classList.remove('active');
+              }, 1000);
+            }
+            return;
+          }
+
           if (data.type === 'citations') {
             pendingCitations = data.sources || [];
             pendingRetrievalMs = data.retrieval_ms || 0;
             pendingCached = data.cached || false;
+            return;
+          }
+
+          if (data.type === 'tool_call') {
+            // Show tool call indicator in chat
+            if (currentStreamBubble) {
+              const toolBox = document.createElement('div');
+              toolBox.className = 'tool-call-box';
+              toolBox.innerHTML = `
+                <span class="tool-icon">🔧</span>
+                <span>Calling <span class="tool-name">${data.tool_name}</span></span>
+                <span class="tool-status">⏳ executing...</span>
+              `;
+              toolBox.id = `tool-call-${data.round}`;
+              currentStreamBubble.appendChild(toolBox);
+              messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+            statusText.textContent = `Calling tool: ${data.tool_name}...`;
+            return;
+          }
+
+          if (data.type === 'tool_result') {
+            const toolBox = document.getElementById(`tool-call-${data.round || 1}`);
+            if (toolBox) {
+              const statusEl = toolBox.querySelector('.tool-status');
+              if (statusEl) {
+                statusEl.textContent = data.success
+                  ? `✅ ${data.elapsed_ms}ms`
+                  : `❌ failed`;
+              }
+            }
+            // Clear existing streamed content for fresh tool-result response
+            const contentEl = document.getElementById('streamingContent');
+            if (contentEl) {
+              contentEl.dataset.raw = '';
+              contentEl.innerHTML = '<span class="streaming-caret"></span>';
+            }
+            statusText.textContent = 'Processing tool result...';
             return;
           }
 
@@ -1142,6 +1350,17 @@
               contentEl.innerHTML = formatMarkdown(contentEl.dataset.raw) + '<span class="streaming-caret"></span>';
             }
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            return;
+          }
+
+          if (data.type === 'tts_audio') {
+            // Queue audio for playback
+            queueAudioPlayback(data.audio_data, data.sentence_index);
+            return;
+          }
+
+          if (data.type === 'tts_done') {
+            console.log(`TTS complete: ${data.sentences_synthesized} sentences in ${data.total_latency_ms}ms`);
             return;
           }
 
@@ -1190,6 +1409,14 @@
                 currentStreamBubble.appendChild(citationsBox);
               }
 
+              // Tool call metrics
+              let toolLabel = '';
+              if (data.tool_calls && data.tool_calls.length > 0) {
+                const toolNames = data.tool_calls.map(t => t.tool_name).join(', ');
+                const toolMs = data.tool_calls.reduce((s, t) => s + (t.elapsed_ms || 0), 0);
+                toolLabel = ` | 🔧 ${toolNames}: ${toolMs}ms`;
+              }
+
               const ragLabel = (retMs > 0)
                 ? ` | RAG: ${retMs}ms${isCached ? ' (cache)' : ''}`
                 : '';
@@ -1197,17 +1424,28 @@
               const telemetry = document.createElement('div');
               telemetry.className = 'telemetry-tag';
               telemetry.innerHTML = `
-                <span>⚡ TTFT: ${metrics.ttft}s${ragLabel} | ${metrics.tps} tok/s | ${metrics.tokens} tokens</span>
+                <span>⚡ TTFT: ${metrics.ttft}s${ragLabel}${toolLabel} | ${metrics.tps} tok/s | ${metrics.tokens} tokens</span>
                 <button class="copy-btn" onclick="copyToClipboard('${encodeURIComponent(finalText)}')">Copy</button>
               `;
               currentStreamBubble.appendChild(telemetry);
+
+              // Add replay audio button if we received TTS
+              if (voiceMode && audioPlaybackQueue.length > 0) {
+                const audioCtrl = document.createElement('div');
+                audioCtrl.className = 'audio-controls';
+                audioCtrl.innerHTML = `<button class="audio-play-btn" onclick="replayLastAudio()">🔊 Replay Audio</button>`;
+                currentStreamBubble.appendChild(audioCtrl);
+              }
+
               currentStreamBubble = null;
             }
 
             currentTurns.push({ role: 'assistant', content: finalText, metrics: metrics, citations: citationsToUse });
             saveSessionToStorage(currentSessionId, currentTurns[0]?.content.slice(0, 24) || 'Gym Query', currentTurns);
             sendBtn.disabled = false;
+            micBtn.disabled = false;
             messageInput.focus();
+            voiceMode = false;
             return;
           }
 
@@ -1218,6 +1456,7 @@
             statusText.textContent = 'Model error';
             appendMessageBubble('assistant', `⚠️ ${data.message || 'An error occurred during inference.'}`);
             sendBtn.disabled = false;
+            micBtn.disabled = false;
           }
         } catch (err) {
           console.error('Error processing websocket frame:', err);
@@ -1225,79 +1464,19 @@
       };
 
       ws.onerror = (err) => {
-        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        if (!isLocal) {
-          statusDot.className = 'status-dot';
-          statusText.textContent = 'Cloud Demo Active (Click to link Local LLM)';
-        } else {
-          statusDot.className = 'status-dot offline';
-          statusText.textContent = 'Backend Offline';
-        }
+        statusDot.className = 'status-dot offline';
+        statusText.textContent = 'Backend Offline — start uvicorn backend.app.main:app';
       };
 
       ws.onclose = () => {
-        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        if (!isLocal) {
-          statusDot.className = 'status-dot';
-          statusText.textContent = 'Cloud Demo Active (Click to link Local LLM)';
-        } else {
-          statusDot.className = 'status-dot offline';
-          statusText.textContent = 'Disconnected (Reconnecting in 2s...)';
-          setTimeout(connectWebSocket, 2000);
-        }
+        statusDot.className = 'status-dot offline';
+        statusText.textContent = 'Disconnected (Reconnecting in 2s...)';
+        setTimeout(connectWebSocket, 2000);
       };
     }
 
-    // --- Intelligent Domain Fallback for Vercel Cloud Mode ---
-    function generateDemoResponse(query) {
-      const lower = (query || '').toLowerCase();
-
-      // Guardrail & Off-Topic / Jailbreak detection
-      const isOffTopic = /\b(python|javascript|java|c\+\+|html|css|sql|react|code|coding|algorithm|function|script|programming|essay|poem|lyrics|bitcoin|crypto|capital of|president|quantum|calculate|solve|ignore (all )?previous instructions|system prompt|jailbreak|dan mode|pretend you are)\b/i.test(lower);
-      if (isOffTopic) {
-        return "I'm FitAssist, the dedicated assistant for FitZone Gym. I can only help with our membership plans, group class schedules, trainer profiles, gym timings, and club policies (such as freezes and cancellations). How can I assist you with your fitness journey at FitZone today?";
-      }
-
-      // Greetings & Introductions
-      if (/^(hi|hello|hey|good morning|good afternoon|good evening|greetings|help|start)\b/i.test(lower.trim())) {
-        return "Hello! Welcome to FitZone Gym. I'm FitAssist, your digital fitness concierge. Here is what I can help you with:\n\n- **Membership Plans & Pricing** (Basic, Standard, Premium)\n- **Group Exercise Classes** (Yoga, HIIT, Strength, Zumba)\n- **Operating Hours** & Amenities\n- **Personal Trainers** (Ahmed Khan, Sarah Ali, Usman Malik)\n- **Gym Policies** (Freezes and Cancellations)\n\nHow can I help you reach your fitness goals today?";
-      }
-
-      // Membership & Pricing
-      if (/\b(plan|plans|membership|memberships|price|prices|pricing|cost|costs|fee|fees|rates|tier|tiers|join|subscribe|discount)\b/i.test(lower)) {
-        return "FitZone Gym offers three membership tiers tailored to your training style:\n\n1. **Basic Plan (Rs. 4,000/month)**: Access to full gym floor, free weights, cardio equipment, and locker rooms.\n2. **Standard Plan (Rs. 6,000/month)**: Full gym access + unlimited group fitness classes (Yoga, HIIT, Strength, Zumba).\n3. **Premium Plan (Rs. 9,000/month)**: Standard benefits + 4 personal training sessions/month, sauna & steam room access, and 2 guest passes/month.\n\n*Special Offers*: 15% discount on 12-month commitments, and a **Free 1-Day Trial Pass** for first-time visitors!";
-      }
-
-      // Classes & Timings
-      if (/\b(class|classes|schedule|timings|yoga|hiit|zumba|strength)\b/i.test(lower)) {
-        return "Here is our weekly Group Fitness Class Schedule at FitZone Gym:\n\n- **Yoga (Mobility & Mindfulness)**: Monday, Wednesday, Friday at 6:00 PM (Studio A with Sarah Ali)\n- **HIIT (High Intensity Intervals)**: Tuesday, Thursday at 7:00 PM (Studio B with Usman Malik)\n- **Strength & Conditioning**: Monday, Wednesday at 8:00 PM (Weight Room Studio with Ahmed Khan)\n- **Zumba (Cardio Dance)**: Saturday at 5:00 PM (Studio A)\n\nAll group classes are included free in the **Standard** and **Premium** plans!";
-      }
-
-      // Personal Trainers
-      if (/\b(trainer|trainers|coach|coaching|ahmed|sarah|usman|personal training|pt)\b/i.test(lower)) {
-        return "Meet our certified personal coaching team at FitZone:\n\n- **Ahmed Khan**: Strength & Bodybuilding Specialist (CSCS certified, 8+ years experience).\n- **Sarah Ali**: Yoga, Posture & Mobility Specialist (500-hr RYT certified, beginner friendly).\n- **Usman Malik**: Functional Fitness & HIIT Conditioning Specialist (ACE certified).\n\nPersonal training is included in the Premium Plan (4 sessions/month) or can be booked separately at the front desk.";
-      }
-
-      // Operating Hours
-      if (/\b(hour|hours|open|opening|close|closing|timings|timing|time|weekend|sunday|saturday|holiday)\b/i.test(lower)) {
-        return "FitZone Gym operational hours:\n\n- **Monday – Friday**: 6:00 AM – 11:00 PM\n- **Saturday – Sunday**: 8:00 AM – 10:00 PM\n- **Public Holidays**: 8:00 AM – 8:00 PM\n\nShowers, lockers, and workout floors remain open throughout operating hours.";
-      }
-
-      // Membership Freeze & Cancellation Policies
-      if (/\b(freeze|freezing|pause|cancel|cancellation|cancelling|policy|rules|travel|vacation)\b/i.test(lower)) {
-        return "Here are our core membership policies:\n\n- **Membership Freeze**: Members may freeze their membership for **up to 30 days per calendar year** with 48 hours advance notice.\n- **Cancellation Policy**: Requires **7 days written notice** before your next monthly billing cycle with no hidden penalties.\n\n*Important Note*: As an AI assistant, I cannot directly modify accounts or cancel memberships. Official requests are processed at the gym reception desk or through your member portal.";
-      }
-
-      // Free Trial & Guest Passes
-      if (/\b(trial|pass|guest|free pass|visit)\b/i.test(lower)) {
-        return "We offer a **Free 1-Day Trial Pass** for local prospective members with valid photo ID! Stop by our front desk during operating hours to register your pass and try out our facilities and group classes.";
-      }
-
-      // General fallback within gym domain
-      return "FitZone Gym is dedicated to your health and performance. We offer strength and cardio zones, group classes (Yoga, HIIT, Strength, Zumba), certified personal trainers, and flexible membership plans. Would you like more details on our membership plans, classes, or policies?";
-    }
-
-    function sendDemoMessage(text) {
+    // --- REST Fallback when WebSocket is unavailable ---
+    async function sendViaRest(text) {
       appendMessageBubble('user', text);
       currentTurns.push({ role: 'user', content: text });
 
@@ -1307,7 +1486,7 @@
       isStreaming = true;
 
       statusDot.className = 'status-dot streaming';
-      statusText.textContent = 'Generating response (Cloud Mode)...';
+      statusText.textContent = 'Connecting via REST API...';
 
       if (heroState.parentNode === messagesContainer) heroState.remove();
 
@@ -1322,8 +1501,7 @@
 
       const contentEl = document.createElement('div');
       contentEl.className = 'markdown-content';
-      contentEl.id = 'streamingContent';
-      contentEl.innerHTML = '<span class="streaming-caret"></span>';
+      contentEl.innerHTML = '<span class="streaming-caret">Searching FitZone domain documents...</span>';
 
       bubble.appendChild(contentEl);
       row.appendChild(avatar);
@@ -1331,49 +1509,76 @@
       messagesContainer.appendChild(row);
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
-      const fullReply = generateDemoResponse(text);
-      const words = fullReply.split(/(\s+)/);
-      let index = 0;
-      let streamedRaw = '';
-      const startTime = performance.now();
+      const restUrl = (window.location.protocol === 'http:' || window.location.protocol === 'https:')
+        ? `${window.location.protocol}//${window.location.hostname || '127.0.0.1'}:${window.location.port || '8000'}/api/chat`
+        : 'http://127.0.0.1:8000/api/chat';
 
-      const timer = setInterval(() => {
-        if (index < words.length) {
-          streamedRaw += words[index];
-          contentEl.innerHTML = formatMarkdown(streamedRaw) + '<span class="streaming-caret"></span>';
-          messagesContainer.scrollTop = messagesContainer.scrollHeight;
-          index++;
-        } else {
-          clearInterval(timer);
-          isStreaming = false;
-          statusDot.className = 'status-dot';
-          statusText.textContent = 'Cloud Mode (Click to connect local backend)';
+      try {
+        const resp = await fetch(restUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            session_id: currentSessionId,
+            message: text
+          })
+        });
 
-          contentEl.innerHTML = formatMarkdown(streamedRaw);
-          contentEl.removeAttribute('id');
-
-          const elapsedSec = Math.max(0.4, (performance.now() - startTime) / 1000).toFixed(2);
-          const metrics = {
-            ttft: '0.35',
-            tokens: Math.round(words.length * 0.75),
-            elapsed: elapsedSec,
-            tps: (Math.round(words.length * 0.75) / parseFloat(elapsedSec)).toFixed(1)
-          };
-
-          const telemetry = document.createElement('div');
-          telemetry.className = 'telemetry-tag';
-          telemetry.innerHTML = `
-            <span>⚡ TTFT: ${metrics.ttft}s | ${metrics.tps} tok/s | ${metrics.tokens} tokens (Cloud Mode)</span>
-            <button class="copy-btn" onclick="copyToClipboard('${encodeURIComponent(streamedRaw)}')">Copy</button>
-          `;
-          bubble.appendChild(telemetry);
-
-          currentTurns.push({ role: 'assistant', content: streamedRaw, metrics: metrics });
-          saveSessionToStorage(currentSessionId, currentTurns[0]?.content.slice(0, 24) || 'Gym Query', currentTurns);
-          sendBtn.disabled = false;
-          messageInput.focus();
+        if (!resp.ok) {
+          throw new Error(`Server returned HTTP ${resp.status}`);
         }
-      }, 35);
+
+        const data = await resp.json();
+        const reply = data.reply || 'No response produced.';
+        contentEl.innerHTML = formatMarkdown(reply);
+
+        // Append citations if available
+        if (data.citations && data.citations.length > 0) {
+          const citationsBox = document.createElement('div');
+          citationsBox.className = 'citations-box';
+          citationsBox.innerHTML = `
+            <div class="citations-header">📚 Grounded in FitZone Documents:</div>
+            <div class="citations-list">
+              ${data.citations.map(c => `
+                <div class="citation-chip" title="${(c.snippet || '').replace(/"/g, '&quot;')}" onclick="showCitationDetail('${encodeURIComponent(JSON.stringify(c))}')">
+                  <span>📄 ${c.title || 'Document'}</span>
+                  <span class="chip-id">[${c.doc_id || 'DOC'}]</span>
+                </div>
+              `).join('')}
+            </div>
+          `;
+          bubble.appendChild(citationsBox);
+        }
+
+        const retMs = data.retrieval_metrics?.retrieval_ms || 0;
+        const telemetry = document.createElement('div');
+        telemetry.className = 'telemetry-tag';
+        telemetry.innerHTML = `
+          <span>⚡ Grounded RAG | ${data.citations?.length || 0} docs retrieved | ${retMs}ms</span>
+          <button class="copy-btn" onclick="copyToClipboard('${encodeURIComponent(reply)}')">Copy</button>
+        `;
+        bubble.appendChild(telemetry);
+
+        currentTurns.push({ role: 'assistant', content: reply, citations: data.citations });
+        saveSessionToStorage(currentSessionId, currentTurns[0]?.content.slice(0, 24) || 'Gym Query', currentTurns);
+        statusDot.className = 'status-dot';
+        statusText.textContent = 'Connected (CPU Ready)';
+
+      } catch (err) {
+        contentEl.innerHTML = `
+          <div style="color: #ef4444; font-weight: 600; margin-bottom: 8px;">⚠️ Cannot connect to FitZone Backend Server</div>
+          <p style="margin-bottom: 8px;">The assistant requires the backend server running locally to access your 70 domain documents.</p>
+          <div style="background: rgba(0,0,0,0.1); padding: 8px 12px; border-radius: 6px; font-family: monospace; font-size: 0.85rem;">
+            .venv\\Scripts\\uvicorn backend.app.main:app --port 8000 --reload
+          </div>
+          <p style="margin-top: 8px; font-size: 0.85rem; color: var(--text-muted);">After starting the backend, open <strong>http://127.0.0.1:8000</strong> in your browser to chat.</p>
+        `;
+        statusDot.className = 'status-dot offline';
+        statusText.textContent = 'Backend Offline';
+      } finally {
+        isStreaming = false;
+        sendBtn.disabled = false;
+        messageInput.focus();
+      }
     }
 
     // --- Message Sending ---
@@ -1381,9 +1586,9 @@
       const text = (textToSend !== null ? textToSend : messageInput.value).trim();
       if (!text || isStreaming) return;
 
-      // If WebSocket is not open (e.g. running standalone on Vercel without local tunnel), use Cloud Demo Engine
+      // If WebSocket is not open, use REST endpoint
       if (!ws || ws.readyState !== WebSocket.OPEN) {
-        sendDemoMessage(text);
+        sendViaRest(text);
         return;
       }
 
@@ -1400,6 +1605,226 @@
         message: text
       }));
     }
+
+    // --- Voice Recording ---
+    async function startRecording() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            sampleRate: 16000,
+            channelCount: 1,
+            echoCancellation: true,
+            noiseSuppression: true,
+          }
+        });
+
+        audioChunks = [];
+        let options = {};
+        if (typeof MediaRecorder.isTypeSupported === 'function') {
+          if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+            options = { mimeType: 'audio/webm;codecs=opus' };
+          } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+            options = { mimeType: 'audio/webm' };
+          } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+            options = { mimeType: 'audio/mp4' };
+          }
+        }
+        mediaRecorder = new MediaRecorder(stream, options);
+
+        mediaRecorder.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) audioChunks.push(e.data);
+        };
+
+        mediaRecorder.onstop = async () => {
+          stream.getTracks().forEach(t => t.stop());
+          if (audioChunks.length === 0) {
+            voiceStatus.classList.remove('active');
+            appendMessageBubble('assistant', '⚠️ No audio captured. Please ensure your microphone is working and speak clearly.');
+            return;
+          }
+
+          const rawBlob = new Blob(audioChunks, options);
+          const wavBlob = await convertToWav(rawBlob);
+          const isWav = wavBlob.type === 'audio/wav';
+
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const base64 = reader.result.split(',')[1];
+            voiceStatusText.textContent = '🧠 Transcribing...';
+            voiceMode = true;
+
+            if (ws && ws.readyState === WebSocket.OPEN) {
+              ws.send(JSON.stringify({
+                type: 'voice_audio',
+                session_id: currentSessionId,
+                audio_data: base64,
+                format: isWav ? 'wav' : 'webm',
+                voice_mode: true,
+              }));
+            }
+          };
+          reader.readAsDataURL(wavBlob);
+        };
+
+        mediaRecorder.start(250);
+        isRecording = true;
+        micBtn.classList.add('recording');
+        micBtn.textContent = '⏹';
+        voiceStatus.classList.add('active');
+        voiceStatusText.textContent = '🎙️ Recording...';
+        voiceTranscriptPreview.textContent = '';
+        sendBtn.disabled = true;
+
+      } catch (err) {
+        console.error('Microphone access error:', err);
+        alert('Microphone access denied. Please allow microphone permissions.');
+      }
+    }
+
+    function stopRecording() {
+      if (mediaRecorder && isRecording) {
+        mediaRecorder.stop();
+        isRecording = false;
+        micBtn.classList.remove('recording');
+        micBtn.textContent = '🎤';
+        voiceStatusText.textContent = '⏳ Processing audio...';
+      }
+    }
+
+    // Convert audio blob to WAV (16kHz, mono, 16-bit PCM)
+    async function convertToWav(blob) {
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+      }
+      if (audioContext.state === 'suspended') {
+        try { await audioContext.resume(); } catch (e) {}
+      }
+
+      const arrayBuffer = await blob.arrayBuffer();
+
+      try {
+        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer.slice(0));
+        const channelData = audioBuffer.getChannelData(0);
+
+        // Resample to 16kHz if needed
+        let samples;
+        if (audioBuffer.sampleRate !== 16000) {
+          const ratio = 16000 / audioBuffer.sampleRate;
+          const newLength = Math.round(channelData.length * ratio);
+          samples = new Float32Array(newLength);
+          for (let i = 0; i < newLength; i++) {
+            const srcIdx = i / ratio;
+            const idx = Math.floor(srcIdx);
+            const frac = srcIdx - idx;
+            samples[i] = idx + 1 < channelData.length
+              ? channelData[idx] * (1 - frac) + channelData[idx + 1] * frac
+              : channelData[idx];
+          }
+        } else {
+          samples = channelData;
+        }
+
+        // Convert to 16-bit PCM
+        const pcmData = new Int16Array(samples.length);
+        for (let i = 0; i < samples.length; i++) {
+          const s = Math.max(-1, Math.min(1, samples[i]));
+          pcmData[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+        }
+
+        // Build WAV file
+        const wavBuffer = new ArrayBuffer(44 + pcmData.length * 2);
+        const view = new DataView(wavBuffer);
+
+        // RIFF header
+        writeString(view, 0, 'RIFF');
+        view.setUint32(4, 36 + pcmData.length * 2, true);
+        writeString(view, 8, 'WAVE');
+        writeString(view, 12, 'fmt ');
+        view.setUint32(16, 16, true);
+        view.setUint16(20, 1, true);  // PCM
+        view.setUint16(22, 1, true);  // Mono
+        view.setUint32(24, 16000, true);  // Sample rate
+        view.setUint32(28, 32000, true);  // Byte rate
+        view.setUint16(32, 2, true);  // Block align
+        view.setUint16(34, 16, true); // Bits per sample
+        writeString(view, 36, 'data');
+        view.setUint32(40, pcmData.length * 2, true);
+
+        // Write PCM data
+        const dataView = new Int16Array(wavBuffer, 44);
+        dataView.set(pcmData);
+
+        return new Blob([wavBuffer], { type: 'audio/wav' });
+      } catch (err) {
+        console.error('Audio conversion error:', err);
+        // Fallback: return original blob
+        return blob;
+      }
+    }
+
+    function writeString(view, offset, string) {
+      for (let i = 0; i < string.length; i++) {
+        view.setUint8(offset + i, string.charCodeAt(i));
+      }
+    }
+
+    // --- Audio Playback Queue ---
+    function queueAudioPlayback(base64Audio, sentenceIndex) {
+      audioPlaybackQueue.push({ base64: base64Audio, index: sentenceIndex });
+      if (!isPlayingAudio) {
+        playNextAudio();
+      }
+    }
+
+    async function playNextAudio() {
+      if (audioPlaybackQueue.length === 0) {
+        isPlayingAudio = false;
+        return;
+      }
+
+      isPlayingAudio = true;
+      const item = audioPlaybackQueue.shift();
+
+      try {
+        if (!audioContext) {
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        // Decode base64 to ArrayBuffer
+        const binaryStr = atob(item.base64);
+        const bytes = new Uint8Array(binaryStr.length);
+        for (let i = 0; i < binaryStr.length; i++) {
+          bytes[i] = binaryStr.charCodeAt(i);
+        }
+
+        const audioBuffer = await audioContext.decodeAudioData(bytes.buffer);
+        const source = audioContext.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(audioContext.destination);
+        source.onended = () => playNextAudio();
+        source.start();
+      } catch (err) {
+        console.error('Audio playback error:', err);
+        playNextAudio(); // Skip and continue
+      }
+    }
+
+    let lastAudioData = [];
+    window.replayLastAudio = function() {
+      // Re-queue all audio from the last response
+      // (simplified — in production you'd store them)
+      console.log('Replay not available for this response.');
+    };
+
+    // Mic button event
+    micBtn.addEventListener('click', () => {
+      if (isStreaming) return;
+      if (isRecording) {
+        stopRecording();
+      } else {
+        startRecording();
+      }
+    });
 
     // --- Suggestion Chips ---
     document.querySelectorAll('.chip-btn').forEach(btn => {
@@ -1504,7 +1929,7 @@
     }
 
     // --- Initialization ---
-    const savedTheme = localStorage.getItem('fitzone_theme') || 'light';
+    const savedTheme = localStorage.getItem('fitzone_theme') || 'dark';
     setTheme(savedTheme === 'dark');
 
     // Load active session turns
@@ -1515,6 +1940,13 @@
     renderHistoryList();
     renderTurns();
     connectWebSocket();
+
+    // Initialize AudioContext on first user interaction (required by browsers)
+    document.addEventListener('click', () => {
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }, { once: true });
   </script>
 </body>
 </html>
